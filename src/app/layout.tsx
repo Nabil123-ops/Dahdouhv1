@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Outfit } from "next/font/google";
 import "./globals.css";
 import { ThemeProviders } from "@/utils/theme-providers";
@@ -14,22 +14,26 @@ const OutfitFont = Outfit({
     "600",
     "700",
     "800",
-    "900",
+    "900"
   ],
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://dahdouhai.com"),
+
   title: "Dahdouh AI",
   description:
-    "Dahdouh AI — Your smart assistant for chatting, generating images, analyzing data, and more. Fast, powerful, and built with Next.js.",
+    "Dahdouh AI — Your smart assistant for chatting, generating images, analyzing data, and more.",
+
   keywords: [
     "Dahdouh AI",
     "AI assistant",
     "Chatbot",
-    "image generator",
+    "Image generator",
     "Next.js AI",
-    "AI tools",
+    "AI tools"
   ],
+
   authors: [{ name: "Dahdouh AI" }],
   creator: "Dahdouh AI",
   publisher: "Dahdouh AI",
@@ -37,12 +41,12 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Dahdouh AI",
     description:
-      "Experience the power of Dahdouh AI — an intelligent assistant for chat, images, analysis, study help, and more.",
+      "Experience the power of Dahdouh AI — intelligent assistant for chat, images, study, and more.",
     url: "https://dahdouhai.com",
     siteName: "Dahdouh AI",
     images: [
       {
-        url: "/assets/dahdouh-banner.png", // <— Update to your real banner
+        url: "/assets/dahdouh-banner.png",
         width: 1200,
         height: 630,
       },
@@ -54,24 +58,23 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Dahdouh AI",
-    description:
-      "Your intelligent AI companion for creativity, productivity, and learning.",
-    creator: "@dahdouhai", // change or remove if needed
+    description: "Your AI companion for creativity and productivity.",
     images: ["/assets/dahdouh-banner.png"],
   },
+};
 
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-  },
+// NEW REQUIRED EXPORT
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
       <body
