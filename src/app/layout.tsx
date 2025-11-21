@@ -2,27 +2,47 @@ import type { Metadata } from "next";
 import { Outfit } from "next/font/google";
 import "./globals.css";
 import { ThemeProviders } from "@/utils/theme-providers";
+
 const OutfitFont = Outfit({
   subsets: ["latin"],
-  weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
+  weight: [
+    "100",
+    "200",
+    "300",
+    "400",
+    "500",
+    "600",
+    "700",
+    "800",
+    "900",
+  ],
 });
 
-
 export const metadata: Metadata = {
-  title: "Dev Gemini Clone",
-  description: "A Gemini-inspired AI assistant built with Next.js",
-  keywords: ["AI", "assistant", "Gemini", "clone", "Next.js"],
-  authors: [{ name: "Your Name" }],
-  creator: "Your Name or Company",
-  publisher: "Your Name or Company",
+  title: "Dahdouh AI",
+  description:
+    "Dahdouh AI — Your smart assistant for chatting, generating images, analyzing data, and more. Fast, powerful, and built with Next.js.",
+  keywords: [
+    "Dahdouh AI",
+    "AI assistant",
+    "Chatbot",
+    "image generator",
+    "Next.js AI",
+    "AI tools",
+  ],
+  authors: [{ name: "Dahdouh AI" }],
+  creator: "Dahdouh AI",
+  publisher: "Dahdouh AI",
+
   openGraph: {
-    title: "Dev Gemini Clone",
-    description: "An advanced GEMINI Clone built with Next.js, featuring enhanced functionalities and faster response times.",
-    url: "https://dev-gemini-clone.vercel.app",
-    siteName: "Dev Gemini Clone",
+    title: "Dahdouh AI",
+    description:
+      "Experience the power of Dahdouh AI — an intelligent assistant for chat, images, analysis, study help, and more.",
+    url: "https://dahdouhai.com",
+    siteName: "Dahdouh AI",
     images: [
       {
-        url: "/assets/gemini-banner.png",
+        url: "/assets/dahdouh-banner.png", // <— Update to your real banner
         width: 1200,
         height: 630,
       },
@@ -30,14 +50,16 @@ export const metadata: Metadata = {
     locale: "en_US",
     type: "website",
   },
-  
+
   twitter: {
     card: "summary_large_image",
-    title: "Dev Gemini Clone",
-    description: "Experience the power of AI with our Gemini-inspired assistant",
-    creator: "@yourTwitterHandle",
-    images: ["/assets/gemini-banner.png"],
+    title: "Dahdouh AI",
+    description:
+      "Your intelligent AI companion for creativity, productivity, and learning.",
+    creator: "@dahdouhai", // change or remove if needed
+    images: ["/assets/dahdouh-banner.png"],
   },
+
   viewport: {
     width: "device-width",
     initialScale: 1,
