@@ -19,8 +19,8 @@ const authConfig: NextAuthConfig = {
   },
 
   callbacks: {
-    async redirect({ baseUrl }) {
-      return `${baseUrl}/app`; // ⭐ FIXED — MUST BE ABSOLUTE URL
+    async redirect() {
+      return "https://dahdouhv1.vercel.app/app";
     },
 
     async session({ session }) {
@@ -62,5 +62,4 @@ const authConfig: NextAuthConfig = {
 };
 
 const { handlers } = NextAuth(authConfig);
-
 export const { GET, POST } = handlers;
