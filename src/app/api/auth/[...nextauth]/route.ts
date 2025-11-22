@@ -1,11 +1,9 @@
 // src/app/api/auth/[...nextauth]/route.ts
 
-import NextAuth from "next-auth";
+import NextAuth, { Session, Profile } from "next-auth"; // Import necessary types
 import GoogleProvider from "next-auth/providers/google";
 import connectDB from "@/utils/db";
 import User from "@/app/models/user.model";
-
-// Note: You still need to globally augment the Session type to use session.user.id
 
 const authConfig = {
   providers: [
@@ -16,7 +14,9 @@ const authConfig = {
   ],
 
   callbacks: {
-    async session({ session }: { session: any }) { // Using 'any' for simplicity in beta types
+    // Corrected Session signature: must accept the full parameter object
+    async session(params: { session: Session | any, token: any, user: any }) {
+      const { session } = params;
       await connectDB();
 
       const user = await User.findOne({
@@ -24,13 +24,16 @@ const authConfig = {
       });
 
       if (session.user && user?._id) {
-        session.user.id = user._id.toString();
+        // Use type assertion to satisfy component usage (requires next-auth.d.ts)
+        (session.user as any).id = user._id.toString();
       }
 
       return session;
     },
 
-    async signIn({ profile }: { profile: any }) { // Using 'any' for simplicity in beta types
+    // Corrected SignIn signature: must accept all required fields (user, account, profile, etc.)
+    async signIn(params: { user: any, account: any, profile?: Profile | any }) { 
+      const { profile } = params;
       await connectDB();
 
       const email = profile?.email;
@@ -39,10 +42,9 @@ const authConfig = {
       let user = await User.findOne({ email });
 
       if (!user) {
-        // Safe creation of username
         const newUsername = profile?.given_name
-            ?.replace(/\s+/g, "")
-            ?.toLowerCase() || email.split('@')[0];
+          ?.replace(/\s+/g, "")
+          ?.toLowerCase() || email.split('@')[0];
 
         await User.create({
           email,
@@ -63,7 +65,7 @@ const authConfig = {
   secret: process.env.NEXTAUTH_SECRET,
 };
 
-// ⭐ FINAL FIX: Coerce the handler to 'any' to resolve the type mismatch error
+// ⭐ Final Solution: Coerce to 'any' to resolve the final Route Handler type mismatch
 const handler = NextAuth(authConfig) as any;
 
 export { handler as GET, handler as POST };
