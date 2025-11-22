@@ -1,13 +1,11 @@
 // src/app/api/auth/[...nextauth]/route.ts
 
-// 1. Use the pattern that provides the destructurable handlers object
 import NextAuth, { NextAuthConfig } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import connectDB from "@/utils/db";
 import User from "@/app/models/user.model";
 
-// Define authConfig with explicit type assertion to satisfy the compiler
-const authConfig = {
+const authConfig: NextAuthConfig = {
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_ID!,
@@ -15,12 +13,19 @@ const authConfig = {
     }),
   ],
 
-  callbacks: {
-    // 2. Use a more robust signature (even with 'any' for the parameters)
-    async session(params: { session: any, token: any, user: any }) {
-      const { session } = params;
-      await connectDB();
+  pages: {
+    signIn: "/signin",
+    error: "/signin",
+  },
 
+  callbacks: {
+    // 🔥 Fix redirect after Google login
+    async redirect({ url, baseUrl }) {
+      return "/app"; // redirect user to /app after login
+    },
+
+    async session({ session }) {
+      await connectDB();
       const user = await User.findOne({ email: session.user?.email });
 
       if (session.user && user?._id) {
@@ -30,8 +35,7 @@ const authConfig = {
       return session;
     },
 
-    async signIn(params: { user: any, account: any, profile: any }) {
-      const { profile } = params;
+    async signIn({ profile }) {
       await connectDB();
 
       const email = profile?.email;
@@ -40,7 +44,6 @@ const authConfig = {
       let user = await User.findOne({ email });
 
       if (!user) {
-        // Use your existing safe fallback logic
         const newUsername =
           profile.given_name?.toLowerCase()?.replace(/\s+/g, "") ??
           email.split("@")[0];
@@ -56,16 +59,9 @@ const authConfig = {
     },
   },
 
-  pages: {
-    signIn: "/signin",
-    error: "/signin",
-  },
-
   secret: process.env.NEXTAUTH_SECRET,
-} as NextAuthConfig; // Assert the final object type
+};
 
-// 3. Use the destructuring pattern which is recommended by NextAuth v5 docs
 const { handlers } = NextAuth(authConfig);
 
-// 4. Export the destructured handlers, which are explicitly recognized by Next.js
 export const { GET, POST } = handlers;
