@@ -1,10 +1,12 @@
 // src/app/api/auth/[...nextauth]/route.ts
 
-import NextAuth, { Session, Profile } from "next-auth"; // Import necessary types
+// 1. Use the pattern that provides the destructurable handlers object
+import NextAuth, { NextAuthConfig } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import connectDB from "@/utils/db";
 import User from "@/app/models/user.model";
 
+// Define authConfig with explicit type assertion to satisfy the compiler
 const authConfig = {
   providers: [
     GoogleProvider({
@@ -14,25 +16,21 @@ const authConfig = {
   ],
 
   callbacks: {
-    // Corrected Session signature: must accept the full parameter object
-    async session(params: { session: Session | any, token: any, user: any }) {
+    // 2. Use a more robust signature (even with 'any' for the parameters)
+    async session(params: { session: any, token: any, user: any }) {
       const { session } = params;
       await connectDB();
 
-      const user = await User.findOne({
-        email: session.user?.email,
-      });
+      const user = await User.findOne({ email: session.user?.email });
 
       if (session.user && user?._id) {
-        // Use type assertion to satisfy component usage (requires next-auth.d.ts)
         (session.user as any).id = user._id.toString();
       }
 
       return session;
     },
 
-    // Corrected SignIn signature: must accept all required fields (user, account, profile, etc.)
-    async signIn(params: { user: any, account: any, profile?: Profile | any }) { 
+    async signIn(params: { user: any, account: any, profile: any }) {
       const { profile } = params;
       await connectDB();
 
@@ -42,14 +40,15 @@ const authConfig = {
       let user = await User.findOne({ email });
 
       if (!user) {
-        const newUsername = profile?.given_name
-          ?.replace(/\s+/g, "")
-          ?.toLowerCase() || email.split('@')[0];
+        // Use your existing safe fallback logic
+        const newUsername =
+          profile.given_name?.toLowerCase()?.replace(/\s+/g, "") ??
+          email.split("@")[0];
 
         await User.create({
           email,
           username: newUsername,
-          image: profile?.picture,
+          image: profile.picture,
         });
       }
 
@@ -63,9 +62,10 @@ const authConfig = {
   },
 
   secret: process.env.NEXTAUTH_SECRET,
-};
+} as NextAuthConfig; // Assert the final object type
 
-// ⭐ Final Solution: Coerce to 'any' to resolve the final Route Handler type mismatch
-const handler = NextAuth(authConfig) as any;
+// 3. Use the destructuring pattern which is recommended by NextAuth v5 docs
+const { handlers } = NextAuth(authConfig);
 
-export { handler as GET, handler as POST };
+// 4. Export the destructured handlers, which are explicitly recognized by Next.js
+export const { GET, POST } = handlers;
