@@ -1,78 +1,61 @@
-// src/app/api/auth/[...nextauth]/route.ts
-
-import NextAuth, { Session, User as NextAuthUser } from "next-auth";
+import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
-
-// 💡 FIX: Import NextAuthOptions from the common types subdirectory
-import { NextAuthOptions } from "next-auth/core/types"; 
-
 import connectDB from "@/utils/db";
 import User from "@/app/models/user.model";
 
-// --- NOTE ON TYPE AUGMENTATION ---
-// You will still need to augment the NextAuth Session type globally
-// (in a separate 'next-auth.d.ts' file) to include 'session.user.id' 
-// without TypeScript errors in your frontend components.
-
-const authOptions: NextAuthOptions = {
+export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID as string,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+      clientId: process.env.GOOGLE_ID as string,
+      clientSecret: process.env.GOOGLE_SECRET as string,
     }),
   ],
 
   callbacks: {
-    // 🟩 Explicitly type the arguments for clarity and type checking
-    async session({ session, token }) {
-      await connectDB();
-      
-      // Find the user from the database using the email in the session or token
-      // The select("_id") ensures we only fetch the necessary field.
-      const dbUser = await User.findOne({ 
-        email: session.user?.email || token.email 
-      }).select("_id"); 
+    async session({ session }) {
+      try {
+        await connectDB();
+        const user = await User.findOne({ email: session?.user?.email });
 
-      if (session.user && dbUser) {
-        // Augment the session object with the MongoDB user ID
-        // Note: Using 'as any' bypasses the local type issue, 
-        // but requires the global 'next-auth.d.ts' file to truly fix it.
-        (session.user as any).id = dbUser._id.toString(); 
+        if (session.user && user?._id) {
+          session.user.id = user._id.toString();
+        }
+
+        return session;
+      } catch (error) {
+        console.error("SESSION ERROR:", error);
+        return session;
       }
-
-      return session;
     },
 
-    // 🟩 Explicitly type the signIn arguments
-    async signIn({ user }) {
-      await connectDB();
+    async signIn({ profile }) {
+      try {
+        const email = profile?.email;
+        if (!email) return false;
 
-      const existingUser = await User.findOne({ email: user.email });
+        await connectDB();
 
-      if (!existingUser) {
-        // Create a default username with a safe fallback
-        const newUsername = user.name
-          ? user.name.replace(/\s+/g, "").toLowerCase()
-          : user.email?.split('@')[0] || "dahdouh-user";
-          
-        await User.create({
-          email: user.email,
-          username: newUsername,
-          image: user.image,
-        });
+        let user = await User.findOne({ email });
+        if (!user) {
+          user = await User.create({
+            email,
+            username: profile?.given_name?.replace(" ", "").toLowerCase(),
+            image: profile?.picture,
+          });
+        }
+
+        return true;
+      } catch (error) {
+        console.error("SIGNIN ERROR:", error);
+        return false;
       }
-
-      return true;
     },
   },
 
   pages: {
-    signIn: "/auth/signin",
+    signIn: "/signin",
+    error: "/signin",
   },
 
   secret: process.env.NEXTAUTH_SECRET,
-};
-
-// Required for Next.js Route Handlers
-const { handlers } = NextAuth(authOptions);
-export const { GET, POST } = handlers;
+});
