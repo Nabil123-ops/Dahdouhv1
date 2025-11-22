@@ -1,54 +1,45 @@
-import NextAuth from "next-auth";
+import NextAuth from "next-auth/next";
 import GoogleProvider from "next-auth/providers/google";
 import connectDB from "@/utils/db";
 import User from "@/app/models/user.model";
 
-const authHandler = NextAuth({
+const authOptions = {
   providers: [
     GoogleProvider({
-      clientId: process.env.GOOGLE_ID as string,
-      clientSecret: process.env.GOOGLE_SECRET as string,
+      clientId: process.env.GOOGLE_ID!,
+      clientSecret: process.env.GOOGLE_SECRET!,
     }),
   ],
 
   callbacks: {
     async session({ session }) {
-      try {
-        await connectDB();
-        const user = await User.findOne({ email: session?.user?.email });
+      await connectDB();
+      const user = await User.findOne({ email: session.user?.email });
 
-        if (session.user && user?._id) {
-          session.user.id = user._id.toString();
-        }
-
-        return session;
-      } catch (error) {
-        console.error("SESSION ERROR:", error);
-        return session;
+      if (session.user && user?._id) {
+        session.user.id = user._id.toString();
       }
+
+      return session;
     },
 
     async signIn({ profile }) {
-      try {
-        const email = profile?.email;
-        if (!email) return false;
+      await connectDB();
 
-        await connectDB();
+      const email = profile?.email;
+      if (!email) return false;
 
-        let user = await User.findOne({ email });
-        if (!user) {
-          user = await User.create({
-            email,
-            username: profile?.given_name?.replace(" ", "").toLowerCase(),
-            image: profile?.picture,
-          });
-        }
+      let user = await User.findOne({ email });
 
-        return true;
-      } catch (error) {
-        console.error("SIGNIN ERROR:", error);
-        return false;
+      if (!user) {
+        await User.create({
+          email,
+          username: profile?.given_name?.replace(" ", "").toLowerCase(),
+          image: profile?.picture,
+        });
       }
+
+      return true;
     },
   },
 
@@ -58,7 +49,8 @@ const authHandler = NextAuth({
   },
 
   secret: process.env.NEXTAUTH_SECRET,
-});
+};
 
-// ⭐ REQUIRED BY NEXTAUTH V5:
-export const { GET, POST } = authHandler;
+const handler = NextAuth(authOptions);
+
+export { handler as GET, handler as POST };
