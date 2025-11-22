@@ -1,176 +1,190 @@
 "use client";
 
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import geminiZustand from "@/utils/gemini-zustand";
+import React, {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+
 import { useParams, useRouter } from "next/navigation";
-import { createChat } from "@/actions/actions";
 import { nanoid } from "nanoid";
-import { useMeasure } from "react-use";
 import { User } from "next-auth";
-import InputActions from "./input-actions";
-import Link from "next/link";
+
+// Zustand
+import geminiZustand from "@/utils/gemini-zustand";
+
+// Actions
+import { createChat } from "@/actions/actions";
+
+// Icons
 import { MdImageSearch } from "react-icons/md";
-import { IoMdClose } from "react-icons/io";
+import { IoMdClose, IoMdSend } from "react-icons/io";
+
+
+const MODELS = [
+  { label: "Think", id: "dahdouh-think" },
+  { label: "Deep", id: "dahdouh-deep" },
+  { label: "Flash", id: "dahdouh-flash" },
+  { label: "Boom", id: "dahdouh-boom" },
+  { label: "Vision", id: "dahdouh-vision" }
+];
+
 
 const InputPrompt = ({ user }: { user?: User }) => {
+  const router = useRouter();
+  const { chat } = useParams();
+
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
   const {
     currChat,
     setCurrChat,
     setToast,
-    customPrompt,
-    setInputImgName,
-    inputImgName,
     setMsgLoader,
     optimisticResponse,
     setOptimisticResponse,
-    geminiApiKey,
+    chosenModel,
+    setChosenModel,
   } = geminiZustand();
 
   const [inputImg, setInputImg] = useState<File | null>(null);
-  const { chat } = useParams();
-  const router = useRouter();
-  const [ref, { height }] = useMeasure<HTMLTextAreaElement>();
-  const chatID = (chat as string) || nanoid();
-  const cancelRef = useRef(false);
+  const [inputImgName, setInputImgName] = useState<string | null>(null);
 
-  // ---------------------------------------------
-  // ⭐ GENERATE MESSAGE
-  // ---------------------------------------------
+  /* ======================================================
+     SEND MESSAGE
+  ====================================================== */
   const generateMsg = useCallback(async () => {
-    if (!currChat.userPrompt?.trim() || !user) {
+    const prompt = currChat.userPrompt?.trim();
+    if (!prompt) return;
+
+    if (!user) {
       setToast("Please sign in to use Dahdouh AI.");
       return;
     }
 
-    router.push(`/app/${chatID}#new-chat`);
+    const chatID = (chat as string) ?? nanoid();
+    router.push(`/app/${chatID}`);
 
-    const date = new Date().toISOString().split("T")[0];
-    const rawPrompt = currChat.userPrompt;
+    setMsgLoader(true);
 
-    const detailedPrompt = `
-User Query:
-${rawPrompt}
-    
-AI Instructions:
-You are Dahdouh AI, a helpful, smart, friendly assistant. Provide clear answers in Arabic or English. No Google Gemini branding. Be accurate, polite, and direct.
-Date: ${date}
-`;
+    /* TEMPORARY PLACEHOLDER RESPONSE
+       (Later we replace it with Groq/OpenAI models)
+    */
+    const reply = `🤖 Dahdouh AI (${chosenModel}) is not connected to backend yet.\n\nUser asked: ${prompt}`;
 
-    try {
-      setMsgLoader(true);
-      let text = "";
+    setOptimisticResponse(reply);
 
-      // ♻️ Placeholder response until backend model is added
-      text = "Dahdouh AI is processing your request… (Model integration needed)";
+    // Save in DB
+    await createChat({
+      chatID,
+      userID: user.id as string,
+      imgName: inputImgName ?? undefined,
+      userPrompt: prompt,
+      llmResponse: reply,
+    });
 
-      setOptimisticResponse(text);
-      setCurrChat("llmResponse", text);
-  
-      // Save message to DB
-      await createChat({
-        chatID,
-        userID: user?.id as string,
-        llmName: inputImgName ?? undefined,
-        userPrompt: rawPrompt,
-        llmResponse: text,
-      });
-    } catch (error: any) {
-      console.log("Error:", error);
-      setToast(`Error: ${error.message}`);
-    } finally {
-      setMsgLoader(false);
-      setInputImg(null);
-      setInputImgName(null);
-      setCurrChat("userPrompt", null);
-    }
+    setMsgLoader(false);
+    setInputImg(null);
+    setInputImgName(null);
+    setCurrChat("userPrompt", "");
   }, [
     currChat.userPrompt,
-    user,
-    chatID,
-    inputImg,
-    geminiApiKey,
-    setToast,
-    setCurrChat,
-    setMsgLoader,
-    setOptimisticResponse,
+    chosenModel,
+    chat,
+    user
   ]);
 
-  // ---------------------------------------------
-  // Handle input changes
-  // ---------------------------------------------
-  const handleTextareaChange = useCallback(
-    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      setCurrChat("userPrompt", e.target.value);
-    },
-    [setCurrChat]
-  );
+  /* ======================================================
+     IMAGE UPLOAD
+  ====================================================== */
+  const handleImageUpload = (e: any) => {
+    if (!e.target.files?.length) return;
+    const file = e.target.files[0];
+    setInputImg(file);
+    setInputImgName(file.name);
+  };
 
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-      if (!user) return setToast("Please sign in to use Dahdouh AI.");
-      if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        generateMsg();
-      }
-    },
-    [user, generateMsg, setToast]
-  );
-
-  // ---------------------------------------------
-  // Image upload
-  // ---------------------------------------------
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target?.files?.[0]) {
-      const file = event.target.files[0];
-      setInputImg(file);
-      setInputImgName(file.name);
+  /* ======================================================
+     KEYBOARD ENTER
+  ====================================================== */
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      generateMsg();
     }
   };
 
-  return (
-    <div className="flex-shrink-0 w-full md:px-10 px-5 pb-2 space-y-2 bg-white dark:bg-[#131314]">
-      {/* Uploaded image preview */}
-      {inputImg && (
-        <div className="max-w-4xl overflow-hidden w-full mx-auto">
-          <div className="p-5 bg-rtlLight dark:bg-rtlDark rounded-t-3xl flex items-start gap-2">
-            <MdImageSearch className="text-4xl" />
-            <p className="text-lg font-semibold truncate">{inputImgName}</p>
+  /* ======================================================
+     UI — MODEL SELECTOR
+  ====================================================== */
+  const ModelSelector = () => (
+    <div className="flex gap-2 overflow-x-auto py-1 mb-3">
+      {MODELS.map((m) => (
+        <button
+          key={m.id}
+          onClick={() => setChosenModel(m.id)}
+          className={`px-4 py-1 border rounded-full text-sm transition
+            ${
+              chosenModel === m.id
+                ? "bg-dahdouhPrimary text-white border-dahdouhPrimary"
+                : "border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300"
+            }`}
+        >
+          {m.label}
+        </button>
+      ))}
+    </div>
+  );
 
-            <IoMdClose
-              onClick={() => {
-                setInputImgName(null);
-                setInputImg(null);
-              }}
-              className="absolute top-1 right-1 text-2xl rounded-full cursor-pointer hover:opacity-80 hover:text-red-500"
-            />
-          </div>
+  /* ======================================================
+     RENDER
+  ====================================================== */
+  return (
+    <div className="w-full max-w-4xl mx-auto px-4 pb-4">
+
+      <ModelSelector />
+
+      {/* IMAGE PREVIEW */}
+      {inputImg && (
+        <div className="relative bg-white dark:bg-rtlDark p-3 rounded-xl border mb-3 flex items-center gap-3">
+          <MdImageSearch className="text-3xl" />
+          <p className="text-sm font-semibold truncate">{inputImgName}</p>
+
+          <IoMdClose
+            className="absolute right-2 top-2 text-xl cursor-pointer"
+            onClick={() => {
+              setInputImg(null);
+              setInputImgName(null);
+            }}
+          />
         </div>
       )}
 
-      {/* Textarea */}
-      <div className="max-w-4xl mx-auto w-full">
+      {/* TEXT INPUT */}
+      <div className="bg-rtlLight dark:bg-rtlDark border rounded-2xl p-2 flex items-center gap-2">
+
         <textarea
-          name="prompt"
-          ref={ref}
-          disabled={false}
-          placeholder={
-            customPrompt?.placeholder
-              ? customPrompt.placeholder
-              : "Ask Dahdouh AI anything…"
-          }
-          onChange={handleTextareaChange}
+          ref={textareaRef}
+          placeholder="Ask Dahdouh AI anything..."
+          value={currChat.userPrompt || ""}
+          onChange={(e) => setCurrChat("userPrompt", e.target.value)}
           onKeyDown={handleKeyDown}
-          value={optimisticResponse ? "" : currChat.userPrompt || ""}
-          className="w-full bg-transparent p-4 text-lg outline-none resize-none border rounded-2xl border-gray-300 dark:border-gray-600"
-          rows={1}
+          className="flex-grow outline-none bg-transparent resize-none p-2 text-lg"
         />
+
+        <button
+          onClick={generateMsg}
+          className="bg-dahdouhPrimary text-white p-3 rounded-full"
+        >
+          <IoMdSend className="text-xl" />
+        </button>
       </div>
 
-      <InputActions
-        handleCancel={() => null}
-        handleImageUpload={handleImageUpload}
-        generateMsg={generateMsg}
-      />
+      {/* UPLOAD IMAGE */}
+      <div className="mt-3">
+        <input type="file" onChange={handleImageUpload} />
+      </div>
     </div>
   );
 };
