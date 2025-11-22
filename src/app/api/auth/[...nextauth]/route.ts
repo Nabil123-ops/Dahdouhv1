@@ -1,19 +1,22 @@
-import NextAuth from "next-auth";
+import NextAuth, { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import connectDB from "@/utils/db";
 import User from "@/app/models/user.model";
+import { Session, User as NextAuthUser } from "next-auth";
 
-const authOptions = {
+const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      clientId: process.env.GOOGLE_CLIENT_ID as string,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
     }),
   ],
 
   callbacks: {
-    async session({ session }) {
+    // 🟩 ADD TYPE HERE
+    async session({ session }: { session: Session }) {
       await connectDB();
+
       const user = await User.findOne({ email: session.user?.email });
 
       if (session.user && user) {
@@ -23,7 +26,8 @@ const authOptions = {
       return session;
     },
 
-    async signIn({ user }) {
+    // 🟩 ADD TYPE HERE
+    async signIn({ user }: { user: NextAuthUser }) {
       await connectDB();
 
       const existingUser = await User.findOne({ email: user.email });
@@ -49,4 +53,5 @@ const authOptions = {
 
 const { handlers } = NextAuth(authOptions);
 
+// Required for Next.js Route Handlers
 export const { GET, POST } = handlers;
