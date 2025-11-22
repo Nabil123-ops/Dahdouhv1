@@ -19,9 +19,8 @@ const authConfig: NextAuthConfig = {
   },
 
   callbacks: {
-    // 🔥 Fix redirect after Google login
-    async redirect({ url, baseUrl }) {
-      return "/app"; // redirect user to /app after login
+    async redirect({ baseUrl }) {
+      return `${baseUrl}/app`; // ⭐ FIXED — MUST BE ABSOLUTE URL
     },
 
     async session({ session }) {
