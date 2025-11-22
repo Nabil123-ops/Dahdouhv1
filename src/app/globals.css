@@ -2,164 +2,155 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Gradient DropDown loader  */
-.dropdown-loader {
-  background-color: #f6f7f8;
-  background: linear-gradient(
-    33deg,
-    rgb(148 163 184 / 0.15) 0%,
-    rgb(148 163 184 / 0.15) 25%,
-    rgba(72, 127, 237, 1) 50%,
-    rgb(148 163 184 / 0.15) 75%,
-    rgb(148 163 184 / 0.15) 100%
-  );
-  background-size: 800px 50px;
-  border: none;
-  animation: dropdown-loader 3s infinite linear -0.5s;
+/* ============================================
+   DAHDOUH AI BRAND VARIABLES
+============================================ */
+
+:root {
+  --dahdouh-primary: #4f46e5;   /* Purple */
+  --dahdouh-secondary: #06b6d4; /* Cyan */
+  --dahdouh-dark: #0f172a;
+  --dahdouh-light: #f8fafc;
 }
 
-@keyframes dropdown-loader {
-  0% {
-    background-position: -800px 0px;
-  }
-
-  100% {
-    background-position: 800px 0px;
-  }
+body {
+  background: var(--dahdouh-light);
+  color: var(--dahdouh-dark);
 }
+
+.dark body {
+  background: #0b0c10;
+  color: white;
+}
+
+/* Dahdouh AI Gradient */
+.dahdouh-gradient {
+  background: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%);
+}
+
+/* Dahdouh AI Text Gradient */
+.text-dahdouh {
+  background: linear-gradient(90deg, #4f46e5, #06b6d4);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+
+/* ============================================
+   TEXT ANIMATION (replaces Gemini colors)
+============================================ */
 
 .text-animation {
-  background: -webkit-linear-gradient(
-    15deg,
-    #4285f4 0%,
-    #9b72cb 10%,
-    #d96570 20%,
-    #d96570 25%,
-    #9b72cb 35%,
-    #4285f4 45%,
-    #9b72cb 55%,
-    #d96570 60%,
-    transparent 80%,
-    transparent 100%
-  );
   background: linear-gradient(
     76deg,
-    15deg,
-    #4285f4 0%,
-    #9b72cb 10%,
-    #d96570 20%,
-    #d96570 25%,
-    #9b72cb 35%,
-    #4285f4 45%,
-    #9b72cb 55%,
-    #d96570 60%,
-    transparent 80%,
+    #4f46e5 0%,
+    #6d5be8 15%,
+    #06b6d4 30%,
+    #06b6d4 40%,
+    #4f46e5 55%,
+    #6d5be8 70%,
+    #4f46e5 85%,
     transparent 100%
   );
-  color: transparent !important;
   background-size: 400% 100%;
-  background-clip: text;
   -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: gradient-animation 3s;
+  background-clip: text;
+  color: transparent !important;
+  animation: gradient-animation 3s ease infinite;
 }
 
 @keyframes gradient-animation {
   0% {
-    background-position: 100% 50%;
+    background-position: 100% 0%;
   }
-
   100% {
-    background-position: 0% 50%;
+    background-position: 0% 0%;
   }
 }
 
-@keyframes fadeInSection {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
+
+/* ============================================
+   SECTION FADE
+============================================ */
 
 .fade-in-section {
   opacity: 1;
   animation: fadeInSection 1s ease-in-out;
 }
 
-/* Top Loader */
+@keyframes fadeInSection {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+
+/* ============================================
+   TOP LOADER (kept)
+============================================ */
+
 .loader {
   width: 100%;
   height: 3px;
   position: relative;
-  background: rgb(78, 130, 238, 0.4);
+  background: rgba(79, 70, 229, 0.4); /* dahdouh-primary */
   overflow: hidden;
 }
+
 .loader::after {
   content: "";
   width: 192px;
   height: 3px;
-  background: rgb(78, 130, 238);
+  background: var(--dahdouh-primary);
   position: absolute;
-  top: 0;
-  left: 0;
-  box-sizing: border-box;
   animation: animloader 2s linear infinite;
 }
 
 @keyframes animloader {
-  0% {
-    left: 0;
-    transform: translateX(-100%);
-  }
-  100% {
-    left: 100%;
-    transform: translateX(0%);
-  }
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
 }
 
-/* gradient skeleton loader  */
+
+/* ============================================
+   SKELETON GRADIENT LOADER
+============================================ */
+
 .gradient-loader hr {
-  background-color: #f6f7f8;
   background: linear-gradient(
     33deg,
-    rgb(148 163 184 / 0.15) 0%,
+    rgb(148 163 184 / 0.15),
     rgb(148 163 184 / 0.15) 25%,
-    rgba(72, 127, 237, 1) 50%,
+    var(--dahdouh-primary) 50%,
     rgb(148 163 184 / 0.15) 75%,
-    rgb(148 163 184 / 0.15) 100%
+    rgb(148 163 184 / 0.15)
   );
   background-size: 800px 50px;
   height: 15px;
   border-radius: 4px;
-  border: none;
 }
 
 .gradient-loader hr:nth-child(1) {
-  animation: gemini-loader 3s infinite linear -0.5s;
+  animation: dahdouh-loader 3s infinite linear -0.5s;
 }
-
+.gradient-loader hr:nth-child(2) {
+  animation: dahdouh-loader 3s infinite linear -1.5s;
+}
 .gradient-loader hr:nth-child(3) {
-  animation: gemini-loader 3s infinite linear -1s;
+  animation: dahdouh-loader 3s infinite linear -1s;
   width: 66%;
 }
 
-.gradient-loader hr:nth-child(2) {
-  animation: gemini-loader 3s infinite linear -1.5s;
+@keyframes dahdouh-loader {
+  0% { background-position: -800px 0; }
+  100% { background-position: 800px 0; }
 }
 
-@keyframes gemini-loader {
-  0% {
-    background-position: -800px 0px;
-  }
 
-  100% {
-    background-position: 800px 0px;
-  }
-}
+/* ============================================
+   CUSTOM SCROLLBAR
+============================================ */
 
-/* customScrollbar  */
 *::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -168,108 +159,83 @@
   background: transparent;
 }
 *::-webkit-scrollbar-thumb {
-  border-radius: 10px;
   background: #94a3b846;
+  border-radius: 10px;
 }
 *::-webkit-scrollbar-thumb:hover {
-  background: #888;
+  background: #64748b;
 }
 
-textarea {
-  field-sizing: content;
-}
+/* ============================================
+   COPY BUTTON
+============================================ */
 
 .copyBtn {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
   gap: 0.5rem;
   position: absolute;
   top: 10px;
   right: 10px;
 }
-
 .copyBtn button {
   background: transparent;
   border: none;
   cursor: pointer;
   border-radius: 6px;
 }
-
 .copyBtn span {
   font-size: 0.8rem;
   font-weight: 500;
 }
 
-/* ModalLoader  */
+
+/* ============================================
+   MODAL LOADER
+============================================ */
+
 .modal-loader {
   width: 20px;
   height: 20px;
-  border: 3px solid rgb(78, 130, 238);
+  border: 3px solid var(--dahdouh-primary);
   border-bottom-color: transparent;
   border-radius: 50%;
-  display: inline-block;
-  box-sizing: border-box;
   animation: rotation 1s linear infinite;
 }
 
 @keyframes rotation {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
-/* For div animation  */
+
+/* ============================================
+   GENERAL FADE-IN ELEMENTS
+============================================ */
+
 .fade-in-element {
-  animation: fadeIn 0.3s;
+  animation: fadeIn 0.3s ease;
 }
+
 @keyframes fadeIn {
-  0% {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  0% { opacity: 0; transform: translateY(10px); }
+  100% { opacity: 1; transform: translateY(0); }
 }
 
-/* Dev Toast animation  */
-.dev-toast {
-  animation: toast 0.1s;
-}
-@keyframes toast {
-  0% {
-    opacity: 0;
-    transform: scale(0.9);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
 
-/* microphone blink animation  */
+/* ============================================
+   MICROPHONE BLINK
+============================================ */
+
 .animate-pulse-border {
   animation: pulse-border 2s infinite;
 }
 
 @keyframes pulse-border {
-  0% {
-    border-color: transparent;
-  }
-  50% {
-    border-color: rgba(
-      59,
-      130,
-      246,
-      0.5
-    ); /* tailwind blue-500 at 50% opacity */
-  }
-  100% {
-    border-color: transparent;
-  }
+  0% { border-color: transparent; }
+  50% { border-color: rgba(79, 70, 229, 0.5); }
+  100% { border-color: transparent; }
+}
+
+textarea {
+  field-sizing: content;
 }
