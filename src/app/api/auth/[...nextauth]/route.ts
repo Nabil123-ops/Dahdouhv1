@@ -3,7 +3,7 @@ import GoogleProvider from "next-auth/providers/google";
 import connectDB from "@/utils/db";
 import User from "@/app/models/user.model";
 
-const auth = NextAuth({
+const authConfig = {
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_ID!,
@@ -39,7 +39,7 @@ const auth = NextAuth({
           email,
           username: profile?.given_name
             ?.replace(" ", "")
-            .toLowerCase(),
+            ?.toLowerCase(),
           image: profile?.picture,
         });
       }
@@ -54,7 +54,9 @@ const auth = NextAuth({
   },
 
   secret: process.env.NEXTAUTH_SECRET,
-});
+};
 
-export const GET = auth;
-export const POST = auth;
+// ⭐ next-auth@5 beta uses this EXACT export format:
+const handler = NextAuth(authConfig);
+
+export { handler as GET, handler as POST };
