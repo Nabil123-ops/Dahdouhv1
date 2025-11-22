@@ -1,12 +1,19 @@
 // src/app/api/auth/[...nextauth]/route.ts
 
-// 💡 FIX 1: Import NextAuthOptions as a NAMED export
-import NextAuth, { NextAuthOptions, Session, User as NextAuthUser } from "next-auth";
+import NextAuth, { Session, User as NextAuthUser } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
+
+// 💡 FIX: Import NextAuthOptions from the common types subdirectory
+import { NextAuthOptions } from "next-auth/core/types"; 
+
 import connectDB from "@/utils/db";
 import User from "@/app/models/user.model";
 
-// Define the full auth options object with the correct type
+// --- NOTE ON TYPE AUGMENTATION ---
+// You will still need to augment the NextAuth Session type globally
+// (in a separate 'next-auth.d.ts' file) to include 'session.user.id' 
+// without TypeScript errors in your frontend components.
+
 const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
@@ -16,35 +23,37 @@ const authOptions: NextAuthOptions = {
   ],
 
   callbacks: {
-    // 💡 FIX 2: Explicitly type the session callback arguments
-    async session({ session, token, user }) {
+    // 🟩 Explicitly type the arguments for clarity and type checking
+    async session({ session, token }) {
       await connectDB();
       
-      // In NextAuth v5/App Router, `token` often contains the user data
-      // Find the user from the database based on the email from the session/token
+      // Find the user from the database using the email in the session or token
+      // The select("_id") ensures we only fetch the necessary field.
       const dbUser = await User.findOne({ 
         email: session.user?.email || token.email 
       }).select("_id"); 
 
       if (session.user && dbUser) {
         // Augment the session object with the MongoDB user ID
+        // Note: Using 'as any' bypasses the local type issue, 
+        // but requires the global 'next-auth.d.ts' file to truly fix it.
         (session.user as any).id = dbUser._id.toString(); 
       }
 
       return session;
     },
 
-    // 💡 FIX 3: Explicitly type the signIn callback arguments
-    async signIn({ user, account, profile, email, credentials }) {
+    // 🟩 Explicitly type the signIn arguments
+    async signIn({ user }) {
       await connectDB();
 
       const existingUser = await User.findOne({ email: user.email });
 
       if (!existingUser) {
-        // Note: Added a basic fallback for the username just in case user.name is null
+        // Create a default username with a safe fallback
         const newUsername = user.name
           ? user.name.replace(/\s+/g, "").toLowerCase()
-          : user.email?.split('@')[0] || "user";
+          : user.email?.split('@')[0] || "dahdouh-user";
           
         await User.create({
           email: user.email,
@@ -64,7 +73,6 @@ const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
 };
 
-const { handlers } = NextAuth(authOptions);
-
 // Required for Next.js Route Handlers
+const { handlers } = NextAuth(authOptions);
 export const { GET, POST } = handlers;
