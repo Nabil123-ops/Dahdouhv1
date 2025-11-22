@@ -1,6 +1,6 @@
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
-import connectDB from "@/config/db";
+import connectDB from "@/utils/db";
 import User from "@/app/models/user.model";
 
 const authOptions = {
@@ -48,4 +48,5 @@ const authOptions = {
 };
 
 const { handlers } = NextAuth(authOptions);
+
 export const { GET, POST } = handlers;
