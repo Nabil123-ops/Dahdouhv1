@@ -1,27 +1,19 @@
-import mongoose, { ConnectOptions } from "mongoose";
+import mongoose from "mongoose";
 
 let isConnected = false;
 
-const connectDB = async (): Promise<void> => {
-  mongoose.set("strictQuery", true);
-
-  if (isConnected) {
-    console.info("MongoDB is already connected");
-    return;
-  }
+const connectDB = async () => {
+  if (isConnected) return;
 
   try {
-    await mongoose.connect(process.env.MONGODB_URI as string, {
-      dbName: "gemini-clone",
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    } as ConnectOptions);
+    await mongoose.connect(process.env.MONGODB_URI!, {
+      dbName: "dahdouh_ai", // you can rename this
+    });
 
     isConnected = true;
-    console.info("MongoDB is now connected");
+    console.log("MongoDB Connected ✔");
   } catch (error) {
-    console.error("Failed to connect to MongoDB", error);
-    throw new Error("MongoDB connection failed");
+    console.error("MongoDB connection error:", error);
   }
 };
 
