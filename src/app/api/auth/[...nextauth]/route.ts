@@ -3,7 +3,7 @@ import GoogleProvider from "next-auth/providers/google";
 import connectDB from "@/utils/db";
 import User from "@/app/models/user.model";
 
-export const { handlers, signIn, signOut, auth } = NextAuth({
+const authHandler = NextAuth({
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_ID as string,
@@ -59,3 +59,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
   secret: process.env.NEXTAUTH_SECRET,
 });
+
+// ⭐ REQUIRED BY NEXTAUTH V5:
+export const { GET, POST } = authHandler;
