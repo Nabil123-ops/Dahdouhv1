@@ -26,6 +26,11 @@ interface GeminiState {
   setCustomPrompt:(value:{prompt:string|null, placeholder:string|null})=>void
   geminiApiKey:string | null,
   setGeminiApiKey:(geminiApiKey:string | null)=>void
+  
+  // 💡 FIX 1: Add the chosenModel state property
+  chosenModel: string;
+  // 💡 FIX 2: Add the setChosenModel action
+  setChosenModel: (modelId: string) => void;
 }
 
 const geminiZustand = create<GeminiState>()((set) => ({
@@ -53,8 +58,13 @@ const geminiZustand = create<GeminiState>()((set) => ({
     set((state) => ({
       currChat: { ...state.currChat, [name as string]: value },
     })),
-    setUserData:(userData:User)=>set({userData})
+    setUserData:(userData:User)=>set({userData}),
+    
+    // 💡 FIX 3: Initialize chosenModel with a default value
+    chosenModel: "dahdouh-think", // Default model selected
+
+    // 💡 FIX 4: Implement the setChosenModel action
+    setChosenModel: (modelId: string) => set({ chosenModel: modelId }),
 }));
 
 export default geminiZustand;
-
