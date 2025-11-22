@@ -64,9 +64,8 @@ Date: ${date}
       text = "Dahdouh AI is processing your request… (Model integration needed)";
 
       setOptimisticResponse(text);
-      setFaqToast(false);
       setCurrChat("llmResponse", text);
-
+  
       // Save message to DB
       await createChat({
         chatID,
