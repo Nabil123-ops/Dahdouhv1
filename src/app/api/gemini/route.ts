@@ -68,7 +68,7 @@ export async function POST(req: Request) {
   "dahdouh-ai": "llama-3.1-70b-versatile",
   "dahdouh-math": "groq/compound-mini",
   "dahdouh-search": "openai/gpt-oss-20b",
-  "dahdouh-agent": "groq/llama-3.1-70b-versatile",
+  "dahdouh-agent": "llama-3.1-70b-versatile",
   "dahdouh-vision": "meta-llama/llama-4-scout-17b-16e-instruct",
 };
 
