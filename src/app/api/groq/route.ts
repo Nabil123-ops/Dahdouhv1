@@ -1,15 +1,11 @@
 import { NextResponse } from "next/server";
 
-// Define search result type
 interface SearchResult {
   title: string;
   snippet: string;
   link: string;
 }
 
-/* ============================================================
-   GOOGLE SEARCH (CSE)
-============================================================ */
 async function runGoogleSearch(query: string): Promise<SearchResult[]> {
   const apiKey = process.env.GOOGLE_API_KEY;
   const cx = process.env.GOOGLE_CX;
@@ -24,10 +20,7 @@ async function runGoogleSearch(query: string): Promise<SearchResult[]> {
     const res = await fetch(url);
     const json = await res.json();
 
-    if (json.error) {
-      console.error("Google CSE Error:", json.error);
-      return [];
-    }
+    if (json.error) return [];
 
     if (!json.items) return [];
 
@@ -36,37 +29,25 @@ async function runGoogleSearch(query: string): Promise<SearchResult[]> {
       snippet: item.snippet,
       link: item.link,
     }));
-  } catch (err) {
-    console.error("Google Search Error:", err);
+  } catch {
     return [];
   }
 }
 
-/* ============================================================
-   MAIN API HANDLER
-============================================================ */
 export async function POST(req: Request) {
   try {
     const { prompt, model, imgBase64 } = await req.json();
+
+    if (!prompt && !imgBase64)
+      return NextResponse.json({ error: "Missing prompt" }, { status: 400 });
+
     const GROQ_KEY = process.env.GROQ_API_KEY;
-
-    if (!prompt && !imgBase64) {
+    if (!GROQ_KEY)
       return NextResponse.json(
-        { error: "Missing prompt or image" },
-        { status: 400 }
-      );
-    }
-
-    if (!GROQ_KEY) {
-      return NextResponse.json(
-        { error: "GROQ_API_KEY missing on server" },
+        { error: "Missing GROQ_API_KEY" },
         { status: 500 }
       );
-    }
 
-    /* ============================================================
-       MODEL MAP
-    ============================================================= */
     const MODEL_MAP = {
       "dahdouh-ai": "llama-3.1-70b-versatile",
       "dahdouh-math": "groq/compound-mini",
@@ -76,62 +57,42 @@ export async function POST(req: Request) {
     };
 
     type ModelKey = keyof typeof MODEL_MAP;
+
     const selectedModel =
-      MODEL_MAP[model as ModelKey] || MODEL_MAP["dahdouh-ai"];
+      MODEL_MAP[(model as ModelKey) || "dahdouh-ai"];
 
-    /* ============================================================
-       SYSTEM PROMPT — IMPROVE AI QUALITY
-    ============================================================ */
-    const systemPrompt = `
-You are **Dahdouh AI**, an advanced assistant.
-- Give very clear, helpful answers.
-- If asked for math → show steps and use LaTeX.
-- If asked normal questions → be smart, friendly and accurate.
-- Never respond with weak or short answers.
-- Always respond at high quality.
-`;
-
-    /* ============================================================
-       SEARCH MODEL
-    ============================================================ */
+    // SEARCH MODEL
     if (model === "dahdouh-search") {
       const results = await runGoogleSearch(prompt);
 
-      if (results.length === 0) {
-        return NextResponse.json({ reply: "No search results found." });
-      }
+      if (results.length === 0)
+        return NextResponse.json({ reply: "No results found." });
 
       return NextResponse.json({
         reply: results
-          .map(
-            (r, i) =>
-              `${i + 1}. **${r.title}**\n${r.snippet}\n${r.link}\n`
-          )
-          .join("\n"),
-        results,
+          .map((r, i) => `${i + 1}. **${r.title}**\n${r.snippet}\n${r.link}`)
+          .join("\n\n"),
       });
     }
 
-    /* ============================================================
-       AGENT MODEL (Perplexity Style)
-    ============================================================ */
+    // AGENT MODEL
     if (model === "dahdouh-agent") {
       const searchResults = await runGoogleSearch(prompt);
 
-      const sourcesText =
-        searchResults.length > 0
-          ? searchResults
+      const sources =
+        searchResults.length === 0
+          ? "No sources."
+          : searchResults
               .slice(0, 5)
-              .map((s: SearchResult, i: number) => `(${i + 1}) ${s.title} — ${s.link}`)
-              .join("\n")
-          : "No sources.";
+              .map((s, i) => `(${i + 1}) ${s.title} — ${s.link}`)
+              .join("\n");
 
       const agentPrompt = `
-You are **Dahdouh Agent**, similar to Perplexity AI.
-Give a short, smart final answer, then list sources.
+You are Dahdouh Agent.
+Answer clearly and cite sources like [1], [2].
 
 Sources:
-${sourcesText}
+${sources}
 
 User question:
 ${prompt}
@@ -147,10 +108,8 @@ ${prompt}
           },
           body: JSON.stringify({
             model: selectedModel,
-            messages: [
-              { role: "system", content: systemPrompt },
-              { role: "user", content: agentPrompt },
-            ],
+            messages: [{ role: "user", content: agentPrompt }],
+            temperature: 0.3,
           }),
         }
       );
@@ -158,44 +117,22 @@ ${prompt}
       const data = await res.json();
 
       return NextResponse.json({
-        reply: data?.choices?.[0]?.message?.content || "No agent response.",
+        reply: data?.choices?.[0]?.message?.content || "No response.",
         sources: searchResults,
       });
     }
 
-    /* ============================================================
-       MATH MODEL
-    ============================================================ */
-    let finalPrompt = prompt;
-
-    if (model === "dahdouh-math") {
-      finalPrompt = `
-Solve the following math problem **step-by-step**.
-Use LaTeX formatting.
-
-${prompt}
-`;
-    }
-
-    /* ============================================================
-       VISION MODEL
-    ============================================================ */
+    // VISION MODEL
     if (model === "dahdouh-vision") {
       const messages: any[] = [
         {
-          role: "system",
-          content: systemPrompt,
-        },
-        {
           role: "user",
-          content: [
-            { type: "text", text: prompt || "Describe the image." },
-          ],
+          content: [{ type: "text", text: prompt || "Describe this image." }],
         },
       ];
 
       if (imgBase64) {
-        messages[1].content.push({
+        messages[0].content.push({
           type: "image_url",
           image_url: { url: imgBase64 },
         });
@@ -219,14 +156,12 @@ ${prompt}
       const data = await res.json();
 
       return NextResponse.json({
-        reply: data?.choices?.[0]?.message?.content || "No vision response.",
+        reply: data?.choices?.[0]?.message?.content || "No response.",
       });
     }
 
-    /* ============================================================
-       DEFAULT CHAT (Dahdouh AI)
-    ============================================================ */
-    const res = await fetch(
+    // DEFAULT NORMAL CHAT
+    const normalRes = await fetch(
       "https://api.groq.com/openai/v1/chat/completions",
       {
         method: "POST",
@@ -236,24 +171,19 @@ ${prompt}
         },
         body: JSON.stringify({
           model: selectedModel,
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: finalPrompt },
-          ],
-          temperature: 0.4,
+          messages: [{ role: "user", content: prompt }],
         }),
       }
     );
 
-    const data = await res.json();
+    const data = await normalRes.json();
 
     return NextResponse.json({
       reply: data?.choices?.[0]?.message?.content || "No response.",
     });
-  } catch (err: any) {
-    console.error("API ERROR:", err);
+  } catch (e) {
     return NextResponse.json(
-      { error: "AI Request Failed", detail: err.message },
+      { error: "Server error", detail: `${e}` },
       { status: 500 }
     );
   }
