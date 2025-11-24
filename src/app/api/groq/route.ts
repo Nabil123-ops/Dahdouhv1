@@ -6,6 +6,9 @@ interface SearchResult {
   link: string;
 }
 
+/* ============================================================
+   GOOGLE SEARCH FUNCTION
+============================================================ */
 async function runGoogleSearch(query: string): Promise<SearchResult[]> {
   const apiKey = process.env.GOOGLE_API_KEY;
   const cx = process.env.GOOGLE_CX;
@@ -21,7 +24,6 @@ async function runGoogleSearch(query: string): Promise<SearchResult[]> {
     const json = await res.json();
 
     if (json.error) return [];
-
     if (!json.items) return [];
 
     return json.items.map((item: any) => ({
@@ -34,6 +36,9 @@ async function runGoogleSearch(query: string): Promise<SearchResult[]> {
   }
 }
 
+/* ============================================================
+   MAIN POST HANDLER
+============================================================ */
 export async function POST(req: Request) {
   try {
     const { prompt, model, imgBase64 } = await req.json();
@@ -57,25 +62,29 @@ export async function POST(req: Request) {
     };
 
     type ModelKey = keyof typeof MODEL_MAP;
+    const selectedModel = MODEL_MAP[(model as ModelKey) || "dahdouh-ai"];
 
-    const selectedModel =
-      MODEL_MAP[(model as ModelKey) || "dahdouh-ai"];
-
-    // SEARCH MODEL
+    /* ============================================================
+       SEARCH MODEL
+    ============================================================ */
     if (model === "dahdouh-search") {
       const results = await runGoogleSearch(prompt);
-
       if (results.length === 0)
         return NextResponse.json({ reply: "No results found." });
 
       return NextResponse.json({
         reply: results
-          .map((r, i) => `${i + 1}. **${r.title}**\n${r.snippet}\n${r.link}`)
+          .map(
+            (r, i) =>
+              `${i + 1}. **${r.title}**\n${r.snippet}\n${r.link}`
+          )
           .join("\n\n"),
       });
     }
 
-    // AGENT MODEL
+    /* ============================================================
+       AGENT MODEL
+    ============================================================ */
     if (model === "dahdouh-agent") {
       const searchResults = await runGoogleSearch(prompt);
 
@@ -109,7 +118,7 @@ ${prompt}
           body: JSON.stringify({
             model: selectedModel,
             messages: [{ role: "user", content: agentPrompt }],
-            temperature: 0.3,
+            temperature: 0.4,
           }),
         }
       );
@@ -122,7 +131,9 @@ ${prompt}
       });
     }
 
-    // VISION MODEL
+    /* ============================================================
+       VISION MODEL
+    ============================================================ */
     if (model === "dahdouh-vision") {
       const messages: any[] = [
         {
@@ -160,8 +171,24 @@ ${prompt}
       });
     }
 
-    // DEFAULT NORMAL CHAT
-    const normalRes = await fetch(
+    /* ============================================================
+       MATH MODEL (CLEAN - NO SYMBOLS)
+    ============================================================ */
+    let finalPrompt = prompt;
+
+    if (model === "dahdouh-math") {
+      finalPrompt = `
+Explain this math problem step-by-step using simple text.
+Do NOT use LaTeX or symbols. Write normally, like a teacher explaining clearly.
+
+${prompt}
+`;
+    }
+
+    /* ============================================================
+       DEFAULT NORMAL CHAT (Dahdouh AI)
+    ============================================================ */
+    const res = await fetch(
       "https://api.groq.com/openai/v1/chat/completions",
       {
         method: "POST",
@@ -171,17 +198,19 @@ ${prompt}
         },
         body: JSON.stringify({
           model: selectedModel,
-          messages: [{ role: "user", content: prompt }],
+          messages: [{ role: "user", content: finalPrompt }],
+          temperature: 0.5,
         }),
       }
     );
 
-    const data = await normalRes.json();
+    const data = await res.json();
 
     return NextResponse.json({
       reply: data?.choices?.[0]?.message?.content || "No response.",
     });
   } catch (e) {
+    console.error("API ERROR:", e);
     return NextResponse.json(
       { error: "Server error", detail: `${e}` },
       { status: 500 }
