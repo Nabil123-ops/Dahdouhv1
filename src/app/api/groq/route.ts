@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-// Define the structure of a single search result item
+// Define search result type
 interface SearchResult {
   title: string;
   snippet: string;
@@ -8,9 +8,8 @@ interface SearchResult {
 }
 
 /* ============================================================
-   GOOGLE SEARCH (Custom Search Engine)
+   GOOGLE SEARCH (CSE)
 ============================================================ */
-// Explicitly define the return type as Promise<SearchResult[]>
 async function runGoogleSearch(query: string): Promise<SearchResult[]> {
   const apiKey = process.env.GOOGLE_API_KEY;
   const cx = process.env.GOOGLE_CX;
@@ -31,14 +30,14 @@ async function runGoogleSearch(query: string): Promise<SearchResult[]> {
     }
 
     if (!json.items) return [];
-    // The items returned by the API are mapped to SearchResult objects
+
     return json.items.map((item: any) => ({
       title: item.title,
       snippet: item.snippet,
       link: item.link,
     }));
   } catch (err) {
-    console.error("Google Search Fetch Error:", err);
+    console.error("Google Search Error:", err);
     return [];
   }
 }
@@ -49,6 +48,7 @@ async function runGoogleSearch(query: string): Promise<SearchResult[]> {
 export async function POST(req: Request) {
   try {
     const { prompt, model, imgBase64 } = await req.json();
+    const GROQ_KEY = process.env.GROQ_API_KEY;
 
     if (!prompt && !imgBase64) {
       return NextResponse.json(
@@ -57,17 +57,16 @@ export async function POST(req: Request) {
       );
     }
 
-    const GROQ_KEY = process.env.GROQ_API_KEY;
     if (!GROQ_KEY) {
       return NextResponse.json(
-        { error: "GROQ_API_KEY is not configured." },
+        { error: "GROQ_API_KEY missing on server" },
         { status: 500 }
       );
     }
 
     /* ============================================================
-       MODEL MAP (Groq Compatible)
-    ============================================================ */
+       MODEL MAP
+    ============================================================= */
     const MODEL_MAP = {
       "dahdouh-ai": "llama-3.1-70b-versatile",
       "dahdouh-math": "groq/compound-mini",
@@ -76,26 +75,33 @@ export async function POST(req: Request) {
       "dahdouh-vision": "meta-llama/llama-4-scout-17b-16e-instruct",
     };
 
-    /** FIX: Tell TypeScript that model is a MODEL_MAP key */
     type ModelKey = keyof typeof MODEL_MAP;
-
     const selectedModel =
       MODEL_MAP[model as ModelKey] || MODEL_MAP["dahdouh-ai"];
+
+    /* ============================================================
+       SYSTEM PROMPT — IMPROVE AI QUALITY
+    ============================================================ */
+    const systemPrompt = `
+You are **Dahdouh AI**, an advanced assistant.
+- Give very clear, helpful answers.
+- If asked for math → show steps and use LaTeX.
+- If asked normal questions → be smart, friendly and accurate.
+- Never respond with weak or short answers.
+- Always respond at high quality.
+`;
 
     /* ============================================================
        SEARCH MODEL
     ============================================================ */
     if (model === "dahdouh-search") {
-      const results = await runGoogleSearch(prompt); // results is of type SearchResult[]
+      const results = await runGoogleSearch(prompt);
 
       if (results.length === 0) {
-        return NextResponse.json({
-          reply: "No search results found.",
-        });
+        return NextResponse.json({ reply: "No search results found." });
       }
 
       return NextResponse.json({
-        // Fix: 'r' is now correctly inferred as SearchResult due to the function signature
         reply: results
           .map(
             (r, i) =>
@@ -107,28 +113,28 @@ export async function POST(req: Request) {
     }
 
     /* ============================================================
-       AGENT MODEL
+       AGENT MODEL (Perplexity Style)
     ============================================================ */
     if (model === "dahdouh-agent") {
-      const searchResults = await runGoogleSearch(prompt); // searchResults is of type SearchResult[]
+      const searchResults = await runGoogleSearch(prompt);
 
       const sourcesText =
         searchResults.length > 0
           ? searchResults
               .slice(0, 5)
-              // Fix: Explicitly type 's' as SearchResult here for consistency
               .map((s: SearchResult, i: number) => `(${i + 1}) ${s.title} — ${s.link}`)
               .join("\n")
           : "No sources.";
 
       const agentPrompt = `
-You are Dahdouh Agent.
-Respond clearly, and cite sources as [1], [2].
+You are **Dahdouh Agent**, similar to Perplexity AI.
+Give a short, smart final answer, then list sources.
 
 Sources:
 ${sourcesText}
 
-User: ${prompt}
+User question:
+${prompt}
 `;
 
       const res = await fetch(
@@ -140,9 +146,11 @@ User: ${prompt}
             Authorization: `Bearer ${GROQ_KEY}`,
           },
           body: JSON.stringify({
-            model: MODEL_MAP["dahdouh-agent"],
-            messages: [{ role: "user", content: agentPrompt }],
-            temperature: 0.3,
+            model: selectedModel,
+            messages: [
+              { role: "system", content: systemPrompt },
+              { role: "user", content: agentPrompt },
+            ],
           }),
         }
       );
@@ -162,7 +170,8 @@ User: ${prompt}
 
     if (model === "dahdouh-math") {
       finalPrompt = `
-Solve this math problem step-by-step using LaTeX:
+Solve the following math problem **step-by-step**.
+Use LaTeX formatting.
 
 ${prompt}
 `;
@@ -174,6 +183,10 @@ ${prompt}
     if (model === "dahdouh-vision") {
       const messages: any[] = [
         {
+          role: "system",
+          content: systemPrompt,
+        },
+        {
           role: "user",
           content: [
             { type: "text", text: prompt || "Describe the image." },
@@ -182,7 +195,7 @@ ${prompt}
       ];
 
       if (imgBase64) {
-        messages[0].content.push({
+        messages[1].content.push({
           type: "image_url",
           image_url: { url: imgBase64 },
         });
@@ -206,14 +219,12 @@ ${prompt}
       const data = await res.json();
 
       return NextResponse.json({
-        reply:
-          data?.choices?.[0]?.message?.content ||
-          "No vision response.",
+        reply: data?.choices?.[0]?.message?.content || "No vision response.",
       });
     }
 
     /* ============================================================
-       DEFAULT NORMAL CHAT
+       DEFAULT CHAT (Dahdouh AI)
     ============================================================ */
     const res = await fetch(
       "https://api.groq.com/openai/v1/chat/completions",
@@ -225,7 +236,10 @@ ${prompt}
         },
         body: JSON.stringify({
           model: selectedModel,
-          messages: [{ role: "user", content: finalPrompt }],
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: finalPrompt },
+          ],
           temperature: 0.4,
         }),
       }
@@ -234,18 +248,12 @@ ${prompt}
     const data = await res.json();
 
     return NextResponse.json({
-      reply:
-        data?.choices?.[0]?.message?.content ||
-        "No response.",
+      reply: data?.choices?.[0]?.message?.content || "No response.",
     });
   } catch (err: any) {
     console.error("API ERROR:", err);
-
     return NextResponse.json(
-      {
-        error: "AI Request Failed",
-        detail: err.message,
-      },
+      { error: "AI Request Failed", detail: err.message },
       { status: 500 }
     );
   }
