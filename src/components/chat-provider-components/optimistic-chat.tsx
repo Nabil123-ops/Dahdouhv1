@@ -22,41 +22,54 @@ const OptimisticChat = ({
     setOptimisticPrompt,
   } = geminiZustand();
 
-  // 🟢 Normalized messages — KEEP FLAT STRUCTURE
-  const normalizedMessages = message?.map((m) => ({
-    _id: m._id || Date.now().toString(),
-    chatID: m.chatID,
-    userID: m.userID,
-    userPrompt: m.userPrompt,
-    llmResponse: m.llmResponse,
-    imgName: m.imgName,
-    createdAt: m.createdAt,
-    updatedAt: m.updatedAt,
-  })) || [];
+  /* ============================================
+     NORMALIZE MESSAGES FROM DATABASE
+     ============================================ */
+  const normalizedMessages =
+    message?.map((m) => ({
+      _id: m._id || Date.now().toString(),
+      chatID: m.chatID,
+      userID: m.userID,
+      userPrompt: m.userPrompt,
+      llmResponse: m.llmResponse,
+      imgName: m.imgName,
+      createdAt: m.createdAt,
+      updatedAt: m.updatedAt,
+    })) || [];
 
-  // 🟢 Optimistic UI
+  /* ============================================
+     OPTIMISTIC UI STATE HANDLER
+     ============================================ */
   const [optimisticChats, addOptimisticChat] = useOptimistic<MessageProps[]>(
     normalizedMessages
   );
 
-  // 🟢 Add optimistic message
+  /* ============================================
+     ADD OPTIMISTIC MESSAGE FIXED
+     ============================================ */
   useEffect(() => {
     if (optimisticPrompt && optimisticResponse) {
-      addOptimisticChat({
-        _id: Date.now().toString(),
-        userPrompt: optimisticPrompt,
-        llmResponse: optimisticResponse,
-        imgName: inputImgName ?? undefined,
-      });
+      addOptimisticChat((prev) => [
+        ...prev,
+        {
+          _id: Date.now().toString(),
+          userPrompt: optimisticPrompt,
+          llmResponse: optimisticResponse,
+          imgName: inputImgName ?? undefined,
+        },
+      ]);
 
-      // reset
+      // Reset optimistic state
       setTimeout(() => {
         setOptimisticPrompt(null);
         setOptimisticResponse(null);
-      }, 200);
+      }, 150);
     }
   }, [optimisticPrompt, optimisticResponse]);
 
+  /* ============================================
+     RENDER MESSAGES
+     ============================================ */
   return (
     <>
       {optimisticChats.map((chat) => (
