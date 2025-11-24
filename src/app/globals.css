@@ -2,24 +2,30 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ===================================================================
-   DAHDOUH AI — GLOBAL DESIGN SYSTEM
-=================================================================== */
+/* ----------------------------------------------------------
+   ROOT COLORS + BRAND VARIABLES
+---------------------------------------------------------- */
 :root {
-  --dahdouh-primary: #4f46e5;     /* Purple */
-  --dahdouh-secondary: #06b6d4;   /* Cyan */
-  --dahdouh-accent: #8b5cf6;
-  --dahdouh-dark: #0f172a;
-  --dahdouh-light: #f8fafc;
+  --primary: #4f46e5;
+  --secondary: #06b6d4;
+  --accent: #8b5cf6;
 
-  --smooth-glow: 0 0 18px rgba(79, 70, 229, 0.35);
-  --smooth-shadow: 0px 4px 20px rgba(0,0,0,0.05);
+  --dark: #0f172a;
+  --light: #f8fafc;
+
+  --glass-bg: rgba(255,255,255,0.18);
+  --glass-border: rgba(255,255,255,0.35);
+
+  --card-bg-dark: rgba(15,17,23,0.45);
+
+  --glow: 0 0 18px rgba(79,70,229,0.35);
+  --shadow: 0 8px 34px rgba(0,0,0,0.12);
 }
 
 body {
-  background: var(--dahdouh-light);
-  color: var(--dahdouh-dark);
-  font-smooth: antialiased;
+  background: var(--light);
+  color: var(--dark);
+  overflow-x: hidden;
 }
 
 .dark body {
@@ -27,277 +33,149 @@ body {
   color: white;
 }
 
-/* ===================================================================
-   BRAND GRADIENTS
-=================================================================== */
-.dahdouh-gradient {
-  background: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%);
+/* ----------------------------------------------------------
+   PARALLAX BACKGROUND (Ultra Premium)
+---------------------------------------------------------- */
+body::before {
+  content: "";
+  position: fixed;
+  top: -20%;
+  left: -20%;
+  width: 140%;
+  height: 140%;
+  background: radial-gradient(circle at 30% 20%, #4f46e545, transparent 70%),
+              radial-gradient(circle at 80% 70%, #06b6d445, transparent 70%);
+  z-index: -1;
+  animation: bgFloat 18s ease-in-out infinite alternate;
 }
 
-.text-dahdouh {
-  background: linear-gradient(90deg, #4f46e5, #06b6d4);
-  -webkit-background-clip: text;
-  color: transparent;
+@keyframes bgFloat {
+  from { transform: translate3d(-30px,-20px,0); }
+  to   { transform: translate3d(30px,20px,0); }
 }
 
-/* ===================================================================
-   TEXT ANIMATION — SIGNATURE EFFECT
-=================================================================== */
-.text-animation {
-  background: linear-gradient(
-    76deg,
-    #4f46e5,
-    #6d5be8 15%,
-    #06b6d4 30%,
-    #06b6d4 40%,
-    #4f46e5 55%,
-    #6d5be8 70%,
-    #4f46e5 85%
-  );
-  background-size: 400% 100%;
-  -webkit-background-clip: text;
-  color: transparent;
-  animation: gradient-animation 3s ease infinite;
+/* ----------------------------------------------------------
+   ANIMATED LOGO GLOW
+---------------------------------------------------------- */
+.logo-glow {
+  animation: logoPulse 3s ease-in-out infinite;
+  filter: drop-shadow(0 0 12px rgba(79,70,229,0.55));
 }
 
-@keyframes gradient-animation {
-  from { background-position: 100% 0%; }
-  to   { background-position: 0% 0%; }
+@keyframes logoPulse {
+  0%   { transform: scale(1);   filter: drop-shadow(0 0 10px rgba(79,70,229,0.4)); }
+  50%  { transform: scale(1.09); filter: drop-shadow(0 0 22px rgba(79,70,229,0.7)); }
+  100% { transform: scale(1);   filter: drop-shadow(0 0 10px rgba(79,70,229,0.4)); }
 }
 
-/* ===================================================================
-   CHAT BUBBLES — USER + AI
-=================================================================== */
-.user-bubble {
-  background: var(--dahdouh-primary);
-  padding: 14px 18px;
-  border-radius: 18px;
-  color: white;
-  max-width: 80%;
-  font-size: 1rem;
-  box-shadow: var(--smooth-shadow);
-  animation: fadeIn 0.25s ease;
-}
-
-/* Default AI bubble */
-.default-style {
-  background: white;
-  padding: 18px;
-  border-radius: 18px;
-  border: 1px solid #e2e2e2;
-  color: #111;
-  box-shadow: var(--smooth-shadow);
-  animation: fadeIn 0.25s ease;
-}
-.dark .default-style {
-  background: #14161b;
-  border-color: #353535;
-  color: #f4f4f4;
-}
-
-/* ===================================================================
-   MATH MODE BUBBLE
-=================================================================== */
-.math-style {
-  background: #eef3ff;
-  border-left: 6px solid #4f46e5;
-  padding: 18px;
-  border-radius: 16px;
-  line-height: 1.7;
-  animation: fadeIn 0.3s ease;
-}
-.dark .math-style {
-  background: #18253c;
-}
-
-/* ===================================================================
-   AGENT MODE (Terminal)
-=================================================================== */
-.agent-style {
-  background: #0d1117;
-  color: #cbd5e1;
-  border-radius: 16px;
-  padding: 18px;
-  border: 1px solid #30363d;
-  font-family: "JetBrains Mono", monospace;
-  font-size: 0.95rem;
-  animation: fadeIn 0.25s ease;
-}
-
-.agent-style::before {
-  content: "> Dahdouh Agent Running...";
-  color: #10b981;
-  display: block;
-  margin-bottom: 10px;
-}
-
-/* ===================================================================
-   AGENT SOURCES — PERPLEXITY STYLE
-=================================================================== */
-.agent-sources-box {
-  background: rgba(22, 27, 34, 0.6);
-  border: 1px solid #30363d;
-  padding: 18px;
-  border-radius: 14px;
-  margin-top: 12px;
-  animation: fadeIn 0.25s ease;
-}
-
-.sources-title {
-  font-size: 1rem;
-  color: #10b981;
-  font-weight: 600;
-  margin-bottom: 8px;
-}
-
-.sources-list {
-  list-style: none;
-  padding-left: 0;
-}
-
-.source-item {
-  color: #cbd5e1;
-  margin-bottom: 6px;
-  font-family: "JetBrains Mono", monospace;
-  font-size: 0.9rem;
-  word-break: break-all;
-}
-
-/* ===================================================================
-   SEARCH RESULTS (Google + Perplexity UI)
-=================================================================== */
-.search-box {
-  background: white;
-  border-radius: 16px;
-  border: 1px solid #e4e4e7;
-  padding: 18px;
-  line-height: 1.65;
-  box-shadow: var(--smooth-shadow);
-  animation: fadeIn 0.25s ease;
-}
-.dark .search-box {
-  background: #14161b;
-  border-color: #303035;
-}
-.search-line {
-  margin-bottom: 12px;
-}
-
-/* ===================================================================
-   IMAGE PREVIEW
-=================================================================== */
-.img-preview {
-  margin-top: 10px;
-  padding: 12px;
-  background: #f3f3f3;
-  border-radius: 12px;
-}
-.dark .img-preview {
-  background: #1f2127;
-}
-
-/* ===================================================================
-   CHAT INPUT — Lovable AI Style
-=================================================================== */
-.da-chatbox {
-  background: white;
-  border-radius: 20px;
-  border: 1px solid #e5e7eb;
-  padding: 14px 18px;
+/* ----------------------------------------------------------
+   GLASS NAVBAR (Permanent)
+---------------------------------------------------------- */
+.nav-glass {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 64px;
+  backdrop-filter: blur(22px);
+  background: var(--glass-bg);
+  border-bottom: 1px solid var(--glass-border);
+  z-index: 99;
   display: flex;
-  align-items: flex-end;
-  gap: 12px;
-  transition: 0.2s ease;
-  box-shadow: var(--smooth-shadow);
-}
-.dark .da-chatbox {
-  background: #14161b;
-  border-color: #333;
+  align-items: center;
+  padding: 0 22px;
+  animation: fadeDown 0.6s ease;
 }
 
-.da-attach-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 14px;
-  background: #edf0f5;
-  display: grid;
-  place-content: center;
-  font-size: 22px;
-  cursor: pointer;
-  transition: 0.2s;
-}
-.da-attach-btn:hover {
-  background: #dfe2ea;
+@keyframes fadeDown {
+  from { opacity: 0; transform: translateY(-18px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-.da-textarea {
-  flex-grow: 1;
-  background: transparent;
-  resize: none;
-  font-size: 1.1rem;
-  padding: 6px 0;
-  outline: none;
+/* ----------------------------------------------------------
+   VISION PRO SIDEBAR (Floating Glass)
+---------------------------------------------------------- */
+.vision-sidebar {
+  position: fixed;
+  left: 22px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 90;
 }
 
-.da-send-btn {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: var(--dahdouh-primary);
+.sidebar-glass {
+  width: 88px;
+  backdrop-filter: blur(22px);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 24px;
+  padding: 20px 14px;
+  box-shadow: var(--shadow);
+  animation: fadeIn 0.7s ease;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.sb-link {
   color: white;
-  display: grid;
-  place-content: center;
-  font-size: 22px;
-  cursor: pointer;
-  transition: 0.25s ease;
-}
-.da-send-btn:hover {
-  background: #3d38cc;
-  box-shadow: var(--smooth-glow);
+  font-size: 1.45rem;
+  transition: all 0.25s ease;
 }
 
-/* ===================================================================
-   MODEL SELECTOR — PREMIUM GRADIENT TABS
-=================================================================== */
+.sb-link:hover {
+  transform: scale(1.2);
+  text-shadow: 0 0 12px #ffffffaa;
+}
+
+/* ----------------------------------------------------------
+   FLOATING MODEL SELECTOR (Apple Style Tabs)
+---------------------------------------------------------- */
 .model-select-row {
   display: flex;
   gap: 12px;
   padding-bottom: 6px;
+  padding-top: 6px;
+  overflow-x: auto;
 }
 
 .model-btn {
-  padding: 8px 16px;
-  border-radius: 14px;
-  font-weight: 500;
+  padding: 10px 18px;
+  border-radius: 16px;
   border: 1px solid #d1d5db;
+  font-weight: 500;
+  font-size: 0.95rem;
   display: flex;
   gap: 8px;
   align-items: center;
   transition: all 0.25s ease;
-  font-size: 0.95rem;
-}
-.dark .model-btn {
-  border-color: #333;
+  background: rgba(255,255,255,0.45);
+  backdrop-filter: blur(12px);
 }
 
 .model-btn:hover {
   transform: translateY(-2px);
-  box-shadow: var(--smooth-shadow);
+  box-shadow: var(--shadow);
 }
 
 .model-btn.active {
-  transform: scale(1.05);
+  transform: scale(1.08);
   color: white;
   border: none;
-  box-shadow: var(--smooth-glow);
-  animation: pulseSelect 0.25s ease-out;
+  box-shadow: var(--glow);
+  animation: popIn 0.3s ease-out;
 }
 
-@keyframes pulseSelect {
-  0% { transform: scale(0.92); }
-  100% { transform: scale(1.05); }
+@keyframes popIn {
+  from { transform: scale(0.75); opacity: 0; }
+  to   { transform: scale(1.08); opacity: 1; }
 }
 
+/* Gradient per model */
 .model-btn.dahdouh-ai.active {
   background: linear-gradient(90deg, #4f46e5, #06b6d4);
 }
@@ -310,61 +188,163 @@ body {
 .model-btn.dahdouh-agent.active {
   background: linear-gradient(90deg, #16a34a, #22c55e);
 }
+.model-btn.dahdouh-vision.active {
+  background: linear-gradient(90deg, #8b5cf6, #06b6d4);
+}
 
-/* ===================================================================
-   CODE & LATEX
-=================================================================== */
-pre {
-  background: #1a1b26;
-  padding: 16px;
-  border-radius: 14px;
-  color: #e5e7eb;
+/* ----------------------------------------------------------
+   CHAT BUBBLE POP ANIMATION
+---------------------------------------------------------- */
+.user-bubble,
+.default-style,
+.math-style,
+.agent-style,
+.vision-box {
+  animation: bubblePop 0.25s ease;
+}
+
+@keyframes bubblePop {
+  from { transform: scale(0.88); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+/* ----------------------------------------------------------
+   USER BUBBLE
+---------------------------------------------------------- */
+.user-bubble {
+  background: var(--primary);
+  padding: 14px 18px;
+  color: white;
+  border-radius: 18px;
+  max-width: 82%;
+  box-shadow: var(--shadow);
+}
+
+/* ----------------------------------------------------------
+   DEFAULT AI BUBBLE
+---------------------------------------------------------- */
+.default-style {
+  background: white;
+  padding: 18px;
+  border-radius: 18px;
+  border: 1px solid #e2e2e2;
+  box-shadow: var(--shadow);
+}
+
+.dark .default-style {
+  background: #14161b;
+  border-color: #353535;
+  color: #f4f4f4;
+}
+
+/* ----------------------------------------------------------
+   MATH BUBBLE
+---------------------------------------------------------- */
+.math-style {
+  background: #eef3ff;
+  border-left: 6px solid #4f46e5;
+  padding: 18px;
+  border-radius: 16px;
+}
+
+.dark .math-style {
+  background: #18253c;
+}
+
+/* ----------------------------------------------------------
+   AGENT BUBBLE
+---------------------------------------------------------- */
+.agent-style {
+  background: #0d1117;
+  color: #cbd5e1;
+  border-radius: 16px;
+  padding: 18px;
+  border: 1px solid #30363d;
+  font-family: "JetBrains Mono", monospace;
   font-size: 0.95rem;
-  overflow-x: auto;
-  margin: 12px 0;
 }
 
-code {
-  font-family: monospace;
+.agent-style::before {
+  content: "> Dahdouh Agent Running...";
+  color: #10b981;
+  margin-bottom: 10px;
+  display: block;
 }
 
-.katex {
-  font-size: 1.2rem;
+/* ----------------------------------------------------------
+   SEARCH BOX
+---------------------------------------------------------- */
+.search-box {
+  background: white;
+  border-radius: 16px;
+  border: 1px solid #e4e4e7;
+  padding: 18px;
+  line-height: 1.65;
+  box-shadow: var(--shadow);
 }
 
-/* ===================================================================
-   AI TYPING INDICATOR
-=================================================================== */
-.typing-dots {
+/* ----------------------------------------------------------
+   VISION BOX
+---------------------------------------------------------- */
+.vision-box {
+  background: white;
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: var(--shadow);
+}
+
+/* ----------------------------------------------------------
+   TEXT INPUT BAR (Premium)
+---------------------------------------------------------- */
+.da-chatbox {
+  background: rgba(255,255,255,0.7);
+  backdrop-filter: blur(18px);
+  border-radius: 20px;
+  border: 1px solid #e5e7eb;
+  padding: 16px;
+  display: flex;
+  gap: 12px;
+  box-shadow: var(--shadow);
+  transition: 0.25s ease;
+}
+
+.da-chatbox:focus-within {
+  box-shadow: 0 0 22px rgba(79,70,229,0.25);
+}
+
+/* ----------------------------------------------------------
+   AI TYPING LOADER (Dahdouh AI Custom)
+---------------------------------------------------------- */
+.dahdouh-loader {
   display: flex;
   gap: 6px;
-  padding: 14px 6px;
 }
 
-.typing-dots div {
-  width: 8px;
-  height: 8px;
-  background: var(--dahdouh-primary);
+.dahdouh-loader div {
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
-  animation: blinkDots 1.4s infinite both;
+  background: var(--primary);
+  animation: loaderAnim 1.4s infinite ease-in-out;
 }
 
-.typing-dots div:nth-child(2) { animation-delay: 0.2s; }
-.typing-dots div:nth-child(3) { animation-delay: 0.4s; }
+.dahdouh-loader div:nth-child(2) { animation-delay: 0.2s; }
+.dahdouh-loader div:nth-child(3) { animation-delay: 0.4s; }
 
-@keyframes blinkDots {
-  0% { opacity: .2; transform: translateY(0); }
-  20% { opacity: 1; transform: translateY(-2px); }
-  100% { opacity: .2; transform: translateY(0); }
+@keyframes loaderAnim {
+  0% { transform: translateY(0); opacity: .3; }
+  50% { transform: translateY(-8px); opacity: 1; }
+  100% { transform: translateY(0); opacity: .3; }
 }
 
-/* ===================================================================
-   ANIMATIONS
-=================================================================== */
+/* ----------------------------------------------------------
+   GENERAL ANIMATIONS
+---------------------------------------------------------- */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+
 .fade-in-element {
-  animation: fadeIn 0.25s ease;
+  animation: fadeIn 0.3s ease;
 }
