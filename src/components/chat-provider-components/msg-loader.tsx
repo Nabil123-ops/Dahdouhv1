@@ -25,7 +25,7 @@ const MsgLoader = ({
       {/* ================= USER PROMPT ================= */}
       <div className="w-full h-fit flex items-start gap-3">
         <Image
-          src={image}   
+          src={image}
           alt={name}
           width={38}
           height={38}
@@ -49,10 +49,11 @@ const MsgLoader = ({
         </div>
       )}
 
+      {/* Spacer */}
       <div className="w-full flex justify-end h-10 items-center" />
 
-      {/* ================= AI LOADING ================= */}
-      <div className="flex items-start gap-4 w-full">
+      {/* ================= AI LOADING + RESPONSE ================= */}
+      <div className={`flex items-start gap-4 w-full ${!currChat.llmResponse ? "float-typing" : ""}`}>
 
         {/* AI LOGO + SPINNING RING */}
         <div className="dahdouh-logo-wrapper">
@@ -64,11 +65,13 @@ const MsgLoader = ({
             className="dahdouh-logo"
           />
 
-          {/* This is the ring around the logo */}
-          <div className="dahdouh-spin-circle"></div>
+          {/* spinning circle */}
+          {!currChat.llmResponse && (
+            <div className="dahdouh-spin-circle"></div>
+          )}
         </div>
 
-        {/* LOADER OR FINAL AI RESPONSE */}
+        {/* AI RESPONSE OR TYPING LOADER */}
         {!currChat.llmResponse ? (
           <div className="flex items-center">
             <div className="typing-dots">
