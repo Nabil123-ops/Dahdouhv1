@@ -1,0 +1,370 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ===================================================================
+   DAHDOUH AI — GLOBAL DESIGN SYSTEM
+=================================================================== */
+:root {
+  --dahdouh-primary: #4f46e5;     /* Purple */
+  --dahdouh-secondary: #06b6d4;   /* Cyan */
+  --dahdouh-accent: #8b5cf6;
+  --dahdouh-dark: #0f172a;
+  --dahdouh-light: #f8fafc;
+
+  --smooth-glow: 0 0 18px rgba(79, 70, 229, 0.35);
+  --smooth-shadow: 0px 4px 20px rgba(0,0,0,0.05);
+}
+
+body {
+  background: var(--dahdouh-light);
+  color: var(--dahdouh-dark);
+  font-smooth: antialiased;
+}
+
+.dark body {
+  background: #0b0c10;
+  color: white;
+}
+
+/* ===================================================================
+   BRAND GRADIENTS
+=================================================================== */
+.dahdouh-gradient {
+  background: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%);
+}
+
+.text-dahdouh {
+  background: linear-gradient(90deg, #4f46e5, #06b6d4);
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+/* ===================================================================
+   TEXT ANIMATION — SIGNATURE EFFECT
+=================================================================== */
+.text-animation {
+  background: linear-gradient(
+    76deg,
+    #4f46e5,
+    #6d5be8 15%,
+    #06b6d4 30%,
+    #06b6d4 40%,
+    #4f46e5 55%,
+    #6d5be8 70%,
+    #4f46e5 85%
+  );
+  background-size: 400% 100%;
+  -webkit-background-clip: text;
+  color: transparent;
+  animation: gradient-animation 3s ease infinite;
+}
+
+@keyframes gradient-animation {
+  from { background-position: 100% 0%; }
+  to   { background-position: 0% 0%; }
+}
+
+/* ===================================================================
+   CHAT BUBBLES — USER + AI
+=================================================================== */
+.user-bubble {
+  background: var(--dahdouh-primary);
+  padding: 14px 18px;
+  border-radius: 18px;
+  color: white;
+  max-width: 80%;
+  font-size: 1rem;
+  box-shadow: var(--smooth-shadow);
+  animation: fadeIn 0.25s ease;
+}
+
+/* Default AI bubble */
+.default-style {
+  background: white;
+  padding: 18px;
+  border-radius: 18px;
+  border: 1px solid #e2e2e2;
+  color: #111;
+  box-shadow: var(--smooth-shadow);
+  animation: fadeIn 0.25s ease;
+}
+.dark .default-style {
+  background: #14161b;
+  border-color: #353535;
+  color: #f4f4f4;
+}
+
+/* ===================================================================
+   MATH MODE BUBBLE
+=================================================================== */
+.math-style {
+  background: #eef3ff;
+  border-left: 6px solid #4f46e5;
+  padding: 18px;
+  border-radius: 16px;
+  line-height: 1.7;
+  animation: fadeIn 0.3s ease;
+}
+.dark .math-style {
+  background: #18253c;
+}
+
+/* ===================================================================
+   AGENT MODE (Terminal)
+=================================================================== */
+.agent-style {
+  background: #0d1117;
+  color: #cbd5e1;
+  border-radius: 16px;
+  padding: 18px;
+  border: 1px solid #30363d;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.95rem;
+  animation: fadeIn 0.25s ease;
+}
+
+.agent-style::before {
+  content: "> Dahdouh Agent Running...";
+  color: #10b981;
+  display: block;
+  margin-bottom: 10px;
+}
+
+/* ===================================================================
+   AGENT SOURCES — PERPLEXITY STYLE
+=================================================================== */
+.agent-sources-box {
+  background: rgba(22, 27, 34, 0.6);
+  border: 1px solid #30363d;
+  padding: 18px;
+  border-radius: 14px;
+  margin-top: 12px;
+  animation: fadeIn 0.25s ease;
+}
+
+.sources-title {
+  font-size: 1rem;
+  color: #10b981;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.sources-list {
+  list-style: none;
+  padding-left: 0;
+}
+
+.source-item {
+  color: #cbd5e1;
+  margin-bottom: 6px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.9rem;
+  word-break: break-all;
+}
+
+/* ===================================================================
+   SEARCH RESULTS (Google + Perplexity UI)
+=================================================================== */
+.search-box {
+  background: white;
+  border-radius: 16px;
+  border: 1px solid #e4e4e7;
+  padding: 18px;
+  line-height: 1.65;
+  box-shadow: var(--smooth-shadow);
+  animation: fadeIn 0.25s ease;
+}
+.dark .search-box {
+  background: #14161b;
+  border-color: #303035;
+}
+.search-line {
+  margin-bottom: 12px;
+}
+
+/* ===================================================================
+   IMAGE PREVIEW
+=================================================================== */
+.img-preview {
+  margin-top: 10px;
+  padding: 12px;
+  background: #f3f3f3;
+  border-radius: 12px;
+}
+.dark .img-preview {
+  background: #1f2127;
+}
+
+/* ===================================================================
+   CHAT INPUT — Lovable AI Style
+=================================================================== */
+.da-chatbox {
+  background: white;
+  border-radius: 20px;
+  border: 1px solid #e5e7eb;
+  padding: 14px 18px;
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  transition: 0.2s ease;
+  box-shadow: var(--smooth-shadow);
+}
+.dark .da-chatbox {
+  background: #14161b;
+  border-color: #333;
+}
+
+.da-attach-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  background: #edf0f5;
+  display: grid;
+  place-content: center;
+  font-size: 22px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.da-attach-btn:hover {
+  background: #dfe2ea;
+}
+
+.da-textarea {
+  flex-grow: 1;
+  background: transparent;
+  resize: none;
+  font-size: 1.1rem;
+  padding: 6px 0;
+  outline: none;
+}
+
+.da-send-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--dahdouh-primary);
+  color: white;
+  display: grid;
+  place-content: center;
+  font-size: 22px;
+  cursor: pointer;
+  transition: 0.25s ease;
+}
+.da-send-btn:hover {
+  background: #3d38cc;
+  box-shadow: var(--smooth-glow);
+}
+
+/* ===================================================================
+   MODEL SELECTOR — PREMIUM GRADIENT TABS
+=================================================================== */
+.model-select-row {
+  display: flex;
+  gap: 12px;
+  padding-bottom: 6px;
+}
+
+.model-btn {
+  padding: 8px 16px;
+  border-radius: 14px;
+  font-weight: 500;
+  border: 1px solid #d1d5db;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  transition: all 0.25s ease;
+  font-size: 0.95rem;
+}
+.dark .model-btn {
+  border-color: #333;
+}
+
+.model-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--smooth-shadow);
+}
+
+.model-btn.active {
+  transform: scale(1.05);
+  color: white;
+  border: none;
+  box-shadow: var(--smooth-glow);
+  animation: pulseSelect 0.25s ease-out;
+}
+
+@keyframes pulseSelect {
+  0% { transform: scale(0.92); }
+  100% { transform: scale(1.05); }
+}
+
+.model-btn.dahdouh-ai.active {
+  background: linear-gradient(90deg, #4f46e5, #06b6d4);
+}
+.model-btn.dahdouh-math.active {
+  background: linear-gradient(90deg, #2563eb, #3b82f6);
+}
+.model-btn.dahdouh-search.active {
+  background: linear-gradient(90deg, #fbbf24, #f59e0b);
+}
+.model-btn.dahdouh-agent.active {
+  background: linear-gradient(90deg, #16a34a, #22c55e);
+}
+
+/* ===================================================================
+   CODE & LATEX
+=================================================================== */
+pre {
+  background: #1a1b26;
+  padding: 16px;
+  border-radius: 14px;
+  color: #e5e7eb;
+  font-size: 0.95rem;
+  overflow-x: auto;
+  margin: 12px 0;
+}
+
+code {
+  font-family: monospace;
+}
+
+.katex {
+  font-size: 1.2rem;
+}
+
+/* ===================================================================
+   AI TYPING INDICATOR
+=================================================================== */
+.typing-dots {
+  display: flex;
+  gap: 6px;
+  padding: 14px 6px;
+}
+
+.typing-dots div {
+  width: 8px;
+  height: 8px;
+  background: var(--dahdouh-primary);
+  border-radius: 50%;
+  animation: blinkDots 1.4s infinite both;
+}
+
+.typing-dots div:nth-child(2) { animation-delay: 0.2s; }
+.typing-dots div:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes blinkDots {
+  0% { opacity: .2; transform: translateY(0); }
+  20% { opacity: 1; transform: translateY(-2px); }
+  100% { opacity: .2; transform: translateY(0); }
+}
+
+/* ===================================================================
+   ANIMATIONS
+=================================================================== */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-in-element {
+  animation: fadeIn 0.25s ease;
+}
