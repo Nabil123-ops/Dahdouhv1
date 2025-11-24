@@ -22,7 +22,6 @@ const OptimisticChat = ({
     setOptimisticPrompt,
   } = geminiZustand();
 
-  // ⭐ FORCE TS TO USE MessageProps[] (VERY IMPORTANT FIX)
   const normalizedMessages: MessageProps[] =
     message?.map((m) => ({
       _id: m._id || Date.now().toString(),
@@ -35,22 +34,23 @@ const OptimisticChat = ({
       updatedAt: m.updatedAt,
     })) || [];
 
-  // ⭐ ALSO FORCE optimistic state to be MessageProps[]
-  const [optimisticChats, addOptimisticChat] = useOptimistic<MessageProps[]>(
-    normalizedMessages,
-    (state: MessageProps[], newChat: MessageProps) => [...state, newChat]
-  );
+  // ⭐ Your React version only accepts 1 ARGUMENT
+  const [optimisticChats, addOptimisticChat] =
+    useOptimistic<MessageProps[]>(normalizedMessages);
 
   useEffect(() => {
     if (optimisticPrompt && optimisticResponse) {
-      addOptimisticChat({
-        _id: Date.now().toString(),
-        chatID: undefined,
-        userID: undefined,
-        userPrompt: optimisticPrompt,
-        llmResponse: optimisticResponse,
-        imgName: inputImgName ?? undefined,
-      });
+      addOptimisticChat((prev) => [
+        ...prev,
+        {
+          _id: Date.now().toString(),
+          chatID: undefined,
+          userID: undefined,
+          userPrompt: optimisticPrompt,
+          llmResponse: optimisticResponse,
+          imgName: inputImgName ?? undefined,
+        },
+      ]);
 
       setTimeout(() => {
         setOptimisticPrompt(null);
