@@ -13,16 +13,27 @@ async function runGoogleSearch(query: string) {
     query
   )}&key=${apiKey}&cx=${cx}`;
 
-  const res = await fetch(url);
-  const json = await res.json();
+  try {
+    const res = await fetch(url);
+    const json = await res.json();
 
-  if (!json.items) return [];
+    // Check for API-level errors from Google
+    if (json.error) {
+      console.error("Google CSE Error:", json.error);
+      return [];
+    }
 
-  return json.items.map((item: any) => ({
-    title: item.title,
-    snippet: item.snippet,
-    link: item.link,
-  }));
+    if (!json.items) return [];
+
+    return json.items.map((item: any) => ({
+      title: item.title,
+      snippet: item.snippet,
+      link: item.link,
+    }));
+  } catch (err) {
+    console.error("Google Search Fetch Error:", err);
+    return [];
+  }
 }
 
 /* ============================================================
@@ -39,6 +50,17 @@ export async function POST(req: Request) {
       );
     }
 
+    /* IMPORTANT: The GROQ_API_KEY must be set in your .env file
+    and must NOT be prefixed with NEXT_PUBLIC_ 
+    */
+    const GROQ_KEY = process.env.GROQ_API_KEY;
+    if (!GROQ_KEY) {
+      return NextResponse.json(
+        { error: "GROQ_API_KEY is not configured on the server." },
+        { status: 500 }
+      );
+    }
+
     /* ============================================================
        MODEL MAP (Groq Compatible Models)
     ============================================================ */
@@ -47,7 +69,8 @@ export async function POST(req: Request) {
       "dahdouh-math": "deepseek-math-7b-instruct",
       "dahdouh-agent": "llama-3.3-70b-versatile",
       "dahdouh-search": "llama-3.1-8b-instant",
-      "dahdouh-vision": "llama-3.2-11b-vision-preview",
+      // Corrected Vision model name for Groq Llama 3.2
+      "dahdouh-vision": "llama-3.2-11b-vision-preview", 
     };
 
     const selectedModel = MODEL_MAP[model] || MODEL_MAP["dahdouh-ai"];
@@ -57,6 +80,12 @@ export async function POST(req: Request) {
     ============================================================ */
     if (model === "dahdouh-search") {
       const results = await runGoogleSearch(prompt);
+
+      if (results.length === 0) {
+        return NextResponse.json({
+          reply: "Could not find any search results for your query.",
+        });
+      }
 
       return NextResponse.json({
         reply: results
@@ -74,14 +103,19 @@ export async function POST(req: Request) {
     ============================================================ */
     if (model === "dahdouh-agent") {
       const searchResults = await runGoogleSearch(prompt);
-
+      
+      let sourcesString = "No sources available.";
+      if (searchResults.length > 0) {
+          sourcesString = searchResults
+            .slice(0, 5)
+            .map((s: any, i: number) => `(${i + 1}) ${s.title} — ${s.link}`)
+            .join("\n");
+      }
+      
       const agentPrompt = `
-You are Dahdouh Agent. Answer clearly.
+You are Dahdouh Agent. Answer the user question clearly and cite the sources by number (e.g., [1], [2]) at the end of relevant sentences.
 Sources:
-${searchResults
-  .slice(0, 5)
-  .map((s: any, i: number) => `(${i + 1}) ${s.title} — ${s.link}`)
-  .join("\n")}
+${sourcesString}
       
 User question: ${prompt}
 `;
@@ -92,7 +126,7 @@ User question: ${prompt}
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+            Authorization: `Bearer ${GROQ_KEY}`,
           },
           body: JSON.stringify({
             model: MODEL_MAP["dahdouh-agent"],
@@ -105,7 +139,7 @@ User question: ${prompt}
       const data = await res.json();
 
       return NextResponse.json({
-        reply: data?.choices?.[0]?.message?.content || "No response.",
+        reply: data?.choices?.[0]?.message?.content || "No agent response from AI.",
         sources: searchResults,
       });
     }
@@ -118,7 +152,7 @@ User question: ${prompt}
       finalPrompt = `
 Solve this math problem.
 Explain step-by-step.
-Use LaTeX formatting.
+Use LaTeX formatting for equations and variables (e.g., $E=mc^2$ or $\\int x^2 dx$).
 
 Problem:
 ${prompt}
@@ -126,25 +160,29 @@ ${prompt}
     }
 
     /* ============================================================
-       4) VISION MODEL (correct Groq format)
+       4) VISION MODEL (Correct Groq/OpenAI multi-modal format)
     ============================================================ */
     if (model === "dahdouh-vision") {
       const messages: any[] = [
         {
           role: "user",
           content: [
+            // 1. Text part
             {
-              type: "input_text",
+              type: "text", // Correct type for text input
               text: prompt || "Describe the image.",
             },
           ],
         },
       ];
 
+      // 2. Image part (if provided)
       if (imgBase64) {
         messages[0].content.push({
-          type: "input_image",
-          image_url: imgBase64,
+          type: "image_url", // Correct type for image URL
+          image_url: {
+            url: imgBase64, // Base64 string is passed as the URL value
+          },
         });
       }
 
@@ -154,16 +192,23 @@ ${prompt}
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+            Authorization: `Bearer ${GROQ_KEY}`,
           },
           body: JSON.stringify({
-            model: MODEL_MAP["dahdouh-vision"],
+            model: selectedModel, // Using selectedModel which is llama-3.2-11b-vision-preview
             messages,
           }),
         }
       );
 
       const data = await res.json();
+
+      if (data.error) {
+        console.error("Groq Vision API Error:", data.error);
+        return NextResponse.json({
+          reply: `❌ AI Request Failed: Groq Error - ${data.error.message || "Unknown error."}`,
+        });
+      }
 
       return NextResponse.json({
         reply:
@@ -181,7 +226,7 @@ ${prompt}
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+          Authorization: `Bearer ${GROQ_KEY}`,
         },
         body: JSON.stringify({
           model: selectedModel,
@@ -193,13 +238,20 @@ ${prompt}
 
     const data = await response.json();
 
+    if (data.error) {
+      console.error("Groq API Error:", data.error);
+      return NextResponse.json({
+        reply: `❌ AI Request Failed: Groq Error - ${data.error.message || "Unknown error."}`,
+      });
+    }
+
     return NextResponse.json({
       reply:
         data?.choices?.[0]?.message?.content ||
         "No response.",
     });
   } catch (err: any) {
-    console.error("API ERROR:", err);
+    console.error("API CATCH ERROR:", err);
     return NextResponse.json(
       { error: "AI Request Failed", detail: err.message },
       { status: 500 }
