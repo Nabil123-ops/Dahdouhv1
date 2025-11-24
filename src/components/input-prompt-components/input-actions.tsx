@@ -70,7 +70,7 @@ const InputPrompt = ({ user }: { user?: User }) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         prompt,
-        model: chosenModel,
+        model: chosenModel || "dahdouh-ai",
       }),
     });
 
