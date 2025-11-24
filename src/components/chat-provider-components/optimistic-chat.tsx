@@ -22,36 +22,34 @@ const OptimisticChat = ({
     setOptimisticPrompt,
   } = geminiZustand();
 
-  const normalizedMessages: MessageProps[] =
-    message?.map((m) => ({
-      _id: m._id || Date.now().toString(),
-      chatID: m.chatID,
-      userID: m.userID,
-      userPrompt: m.userPrompt ?? "",
-      llmResponse: m.llmResponse ?? "",
-      imgName: m.imgName,
-      createdAt: m.createdAt,
-      updatedAt: m.updatedAt,
-    })) || [];
+  // 🟢 Normalized messages — KEEP FLAT STRUCTURE
+  const normalizedMessages = message?.map((m) => ({
+    _id: m._id || Date.now().toString(),
+    chatID: m.chatID,
+    userID: m.userID,
+    userPrompt: m.userPrompt,
+    llmResponse: m.llmResponse,
+    imgName: m.imgName,
+    createdAt: m.createdAt,
+    updatedAt: m.updatedAt,
+  })) || [];
 
-  // ⭐ Your React version only accepts 1 ARGUMENT
-  const [optimisticChats, addOptimisticChat] =
-    useOptimistic<MessageProps[]>(normalizedMessages);
+  // 🟢 Optimistic UI
+  const [optimisticChats, addOptimisticChat] = useOptimistic<MessageProps[]>(
+    normalizedMessages
+  );
 
+  // 🟢 Add optimistic message
   useEffect(() => {
     if (optimisticPrompt && optimisticResponse) {
-      addOptimisticChat((prev) => [
-        ...prev,
-        {
-          _id: Date.now().toString(),
-          chatID: undefined,
-          userID: undefined,
-          userPrompt: optimisticPrompt,
-          llmResponse: optimisticResponse,
-          imgName: inputImgName ?? undefined,
-        },
-      ]);
+      addOptimisticChat({
+        _id: Date.now().toString(),
+        userPrompt: optimisticPrompt,
+        llmResponse: optimisticResponse,
+        imgName: inputImgName ?? undefined,
+      });
 
+      // reset
       setTimeout(() => {
         setOptimisticPrompt(null);
         setOptimisticResponse(null);
@@ -61,7 +59,7 @@ const OptimisticChat = ({
 
   return (
     <>
-      {optimisticChats.map((chat: MessageProps) => (
+      {optimisticChats.map((chat) => (
         <div key={chat._id} className="my-16 mt-10">
           <ChatProvider
             chatUniqueId={chat._id}
