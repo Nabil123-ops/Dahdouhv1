@@ -23,12 +23,12 @@ const MsgLoader = ({
       <div key="loader" className="my-16 mt-10 fade-in-element">
         <div className="w-full h-fit flex items-start gap-3">
           <Image
-            src={image}
-            alt={name}
-            width={35}
-            height={35}
-            className="rounded-full cursor-pointer"
-          />
+  src="/assets/logo.jpg"
+  alt="Dahdouh AI"
+  width={40}
+  height={40}
+  className="rounded-full animate-pulse"
+ />
           <textarea
             className="prompt-area pt-1 max-h-40  text-base resize-none bg-transparent outline-none rounded-md px-1 w-full"
             readOnly
