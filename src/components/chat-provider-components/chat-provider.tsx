@@ -12,9 +12,9 @@ import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 
 /* ============================================================
-   DETECT UI STYLE BASED ON MODEL + CONTENT
+   MODEL UI DETECTOR
 ============================================================ */
-const detectModelUI = (model: string, content: string) => {
+const detectModelUI = (model: string) => {
   if (model === "dahdouh-search") return "search";
   if (model === "dahdouh-agent") return "agent";
   if (model === "dahdouh-math") return "math";
@@ -23,7 +23,7 @@ const detectModelUI = (model: string, content: string) => {
 };
 
 /* ============================================================
-   SEARCH RESULTS RENDERING
+   SEARCH RESULTS
 ============================================================ */
 const SearchResultCard = ({ text }: { text: string }) => {
   const lines = text.split("\n").filter((l) => l.trim() !== "");
@@ -39,7 +39,7 @@ const SearchResultCard = ({ text }: { text: string }) => {
 };
 
 /* ============================================================
-   VISION RESULT UI – Dahdouh Vision
+   VISION UI
 ============================================================ */
 const VisionCard = ({
   response,
@@ -91,17 +91,12 @@ const ChatProvider = ({
 }) => {
   const { chosenModel } = geminiZustand();
 
-  // Detect UI Style
-  const modelUI = detectModelUI(chosenModel, llmResponse);
-
-  // Remove ** from TTS
-  const ttsText = llmResponse.replace(/\*\*/g, "");
+  const modelUI = detectModelUI(chosenModel);
+  const cleanText = llmResponse.replace(/\*\*/g, "");
 
   return (
     <>
-      {/* ============================================================
-          USER PROMPT
-      ============================================================ */}
+      {/* USER MESSAGE */}
       <div className="flex items-start gap-3 mb-3 fade-in-element">
         <Image
           src={imgInfo.imgSrc}
@@ -114,10 +109,8 @@ const ChatProvider = ({
         <div className="user-bubble">{userPrompt}</div>
       </div>
 
-      {/* ============================================================
-          IMAGE PREVIEW (uploaded image)
-      ============================================================ */}
-      {imgName && imgInfo.imgSrc && (
+      {/* USER IMAGE */}
+      {imgName && (
         <div className="img-preview fade-in-element">
           <p className="font-semibold">📷 {imgName}</p>
           <Image
@@ -130,68 +123,59 @@ const ChatProvider = ({
         </div>
       )}
 
-      {/* ============================================================
-          TEXT TO SPEECH
-      ============================================================ */}
+      {/* TEXT TO SPEECH */}
       <div className="flex justify-end mt-3">
-        <TextToSpeech handleTxtToSpeech={() => ttsText} />
+        <TextToSpeech handleTxtToSpeech={() => cleanText} />
       </div>
 
-      {/* ============================================================
-          AI RESPONSE
-      ============================================================ */}
+      {/* AI RESPONSE */}
       <div className="flex items-start gap-4 mt-6">
-        {/* Logo */}
+        {/* AI AVATAR */}
         <Image
-          src="/assets/logo.png"
+          src="/assets/logo.jpg"
           alt="Dahdouh AI"
-          width={40}
-          height={40}
-          className="rounded-full"
+          width={42}
+          height={42}
+          className="rounded-full shadow-md"
         />
 
+        {/* CONTENT AREA */}
         <root.div className="ai-wrapper fade-in-element">
-          {/* SEARCH RESULTS */}
+          {/* SEARCH MODE */}
           {modelUI === "search" && (
             <SearchResultCard text={llmResponse} />
           )}
 
-          {/* VISION RESULTS */}
+          {/* VISION MODE */}
           {modelUI === "vision" && (
-            <VisionCard
-              response={llmResponse}
-              imgSrc={imgInfo?.imgSrc}
-            />
+            <VisionCard response={llmResponse} imgSrc={imgInfo.imgSrc} />
           )}
 
-          {/* MATH / AGENT / DEFAULT */}
-          {modelUI !== "search" &&
-            modelUI !== "vision" && (
-              <ReactMarkdown
-                className={`ai-bubble ${
-                  modelUI === "math"
-                    ? "math-style"
-                    : modelUI === "agent"
-                    ? "agent-style"
-                    : "default-style"
-                }`}
-                remarkPlugins={[remarkMath]}
-                rehypePlugins={[rehypeKatex]}
-              >
-                {llmResponse}
-              </ReactMarkdown>
-            )}
+          {/* DEFAULT / MATH / AGENT */}
+          {modelUI !== "search" && modelUI !== "vision" && (
+            <ReactMarkdown
+              className={`ai-bubble ${
+                modelUI === "math"
+                  ? "math-style"
+                  : modelUI === "agent"
+                  ? "agent-style"
+                  : "default-style"
+              }`}
+              remarkPlugins={[remarkMath]}
+              rehypePlugins={[rehypeKatex]}
+            >
+              {llmResponse}
+            </ReactMarkdown>
+          )}
         </root.div>
       </div>
 
-      {/* ============================================================
-          SHARE / COPY / DELETE
-      ============================================================ */}
+      {/* ACTION BUTTONS */}
       <ChatActionsBtns
         chatID={chatUniqueId}
         userPrompt={userPrompt}
         llmResponse={llmResponse}
-        shareMsg={`User: ${userPrompt}\n\nAI: ${ttsText}`}
+        shareMsg={`User: ${userPrompt}\n\nAI: ${cleanText}`}
       />
     </>
   );
