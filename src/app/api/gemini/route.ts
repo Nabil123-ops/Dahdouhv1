@@ -64,14 +64,13 @@ export async function POST(req: Request) {
     /* ============================================================
        MODEL MAP (Groq Compatible Models)
     ============================================================ */
-    const MODEL_MAP: Record<string, string> = {
-      "dahdouh-ai": "llama-3.3-70b-versatile",
-      "dahdouh-math": "deepseek-math-7b-instruct",
-      "dahdouh-agent": "llama-3.3-70b-versatile",
-      "dahdouh-search": "llama-3.1-8b-instant",
-      // Corrected Vision model name for Groq Llama 3.2
-      "dahdouh-vision": "llama-3.2-11b-vision-preview", 
-    };
+    const MODEL_MAP = {
+  "dahdouh-ai": "llama-3.1-70b-versatile",
+  "dahdouh-math": "groq/compound-mini",
+  "dahdouh-search": "openai/gpt-oss-20b",
+  "dahdouh-agent": "groq/llama-3.1-70b-versatile",
+  "dahdouh-vision": "meta-llama/llama-4-scout-17b-16e-instruct",
+};
 
     const selectedModel = MODEL_MAP[model] || MODEL_MAP["dahdouh-ai"];
 
