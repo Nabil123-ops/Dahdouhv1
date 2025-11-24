@@ -2,9 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ----------------------------------------------------------
-   ROOT COLORS + BRAND VARIABLES
----------------------------------------------------------- */
+/* ============================================================
+   ROOT COLORS + BRAND VARIABLES — ULTRA PREMIUM
+============================================================ */
 :root {
   --primary: #4f46e5;
   --secondary: #06b6d4;
@@ -13,29 +13,32 @@
   --dark: #0f172a;
   --light: #f8fafc;
 
-  --glass-bg: rgba(255,255,255,0.18);
-  --glass-border: rgba(255,255,255,0.35);
+  --glass-bg: rgba(255,255,255,0.20);
+  --glass-border: rgba(255,255,255,0.28);
 
-  --card-bg-dark: rgba(15,17,23,0.45);
+  --shadow: 0px 12px 40px rgba(0,0,0,0.12);
+  --glow: 0 0 22px rgba(79,70,229,0.45);
 
-  --glow: 0 0 18px rgba(79,70,229,0.35);
-  --shadow: 0 8px 34px rgba(0,0,0,0.12);
+  --transition: 0.28s cubic-bezier(0.4,0.0,0.2,1);
 }
 
+/* ============================================================
+   GLOBAL BACKGROUND — PARALLAX + LUXURY GRADIENT
+============================================================ */
 body {
-  background: var(--light);
+  background: radial-gradient(circle at 20% 30%, #e7e7ff, #e7fbff 50%, #eef3ff);
   color: var(--dark);
   overflow-x: hidden;
+  font-smooth: always;
+  -webkit-font-smoothing: antialiased;
 }
 
 .dark body {
-  background: #0b0c10;
+  background: radial-gradient(circle at 20% 30%, #0f0f16, #0c0f14 50%, #090b10);
   color: white;
 }
 
-/* ----------------------------------------------------------
-   PARALLAX BACKGROUND (Ultra Premium)
----------------------------------------------------------- */
+/* Subtle floating motion */
 body::before {
   content: "";
   position: fixed;
@@ -43,118 +46,116 @@ body::before {
   left: -20%;
   width: 140%;
   height: 140%;
-  background: radial-gradient(circle at 30% 20%, #4f46e545, transparent 70%),
-              radial-gradient(circle at 80% 70%, #06b6d445, transparent 70%);
+  background: radial-gradient(circle at 30% 20%, #4f46e540, transparent 70%),
+              radial-gradient(circle at 80% 70%, #06b6d440, transparent 70%);
   z-index: -1;
+  filter: blur(60px);
   animation: bgFloat 18s ease-in-out infinite alternate;
 }
 
 @keyframes bgFloat {
-  from { transform: translate3d(-30px,-20px,0); }
-  to   { transform: translate3d(30px,20px,0); }
+  from { transform: translate3d(-20px,-20px,0); }
+  to   { transform: translate3d(20px,20px,0); }
 }
 
-/* ----------------------------------------------------------
-   ANIMATED LOGO GLOW
----------------------------------------------------------- */
-.logo-glow {
-  animation: logoPulse 3s ease-in-out infinite;
-  filter: drop-shadow(0 0 12px rgba(79,70,229,0.55));
-}
-
-@keyframes logoPulse {
-  0%   { transform: scale(1);   filter: drop-shadow(0 0 10px rgba(79,70,229,0.4)); }
-  50%  { transform: scale(1.09); filter: drop-shadow(0 0 22px rgba(79,70,229,0.7)); }
-  100% { transform: scale(1);   filter: drop-shadow(0 0 10px rgba(79,70,229,0.4)); }
-}
-
-/* ----------------------------------------------------------
-   GLASS NAVBAR (Permanent)
----------------------------------------------------------- */
+/* ============================================================
+   GLASS NAVIGATION BAR
+============================================================ */
 .nav-glass {
   position: fixed;
-  top: 0;
-  left: 0;
+  top: 0; left: 0;
   width: 100%;
-  height: 64px;
-  backdrop-filter: blur(22px);
+  height: 68px;
   background: var(--glass-bg);
   border-bottom: 1px solid var(--glass-border);
-  z-index: 99;
+  backdrop-filter: blur(22px);
   display: flex;
   align-items: center;
-  padding: 0 22px;
+  padding: 0 28px;
+  z-index: 90;
   animation: fadeDown 0.6s ease;
 }
 
 @keyframes fadeDown {
-  from { opacity: 0; transform: translateY(-18px); }
+  from { opacity: 0; transform: translateY(-12px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ----------------------------------------------------------
-   VISION PRO SIDEBAR (Floating Glass)
----------------------------------------------------------- */
-.vision-sidebar {
-  position: fixed;
-  left: 22px;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 90;
+/* ============================================================
+   LOGO GLOW ANIMATION
+============================================================ */
+.logo-glow {
+  animation: logoPulse 3.2s ease-in-out infinite;
+  filter: drop-shadow(0 0 14px rgba(79,70,229,0.6));
 }
 
-.sidebar-glass {
-  width: 88px;
-  backdrop-filter: blur(22px);
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  border-radius: 24px;
-  padding: 20px 14px;
-  box-shadow: var(--shadow);
-  animation: fadeIn 0.7s ease;
+@keyframes logoPulse {
+  0%   { transform: scale(1);   filter: drop-shadow(0 0 8px rgba(79,70,229,0.4)); }
+  50%  { transform: scale(1.10); filter: drop-shadow(0 0 22px rgba(79,70,229,0.8)); }
+  100% { transform: scale(1);   filter: drop-shadow(0 0 8px rgba(79,70,229,0.4)); }
 }
 
-.sidebar-nav {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-top: 18px;
+/* ============================================================
+   DAHDOUH AI — SPINNING CIRCLE AROUND LOGO
+============================================================ */
+.dahdouh-logo-wrapper {
+  position: relative;
+  width: 48px;
+  height: 48px;
 }
 
-.sb-link {
-  color: white;
-  font-size: 1.45rem;
-  transition: all 0.25s ease;
+.dahdouh-logo {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  position: relative;
+  z-index: 2;
 }
 
-.sb-link:hover {
-  transform: scale(1.2);
-  text-shadow: 0 0 12px #ffffffaa;
+/* Circle loader */
+.dahdouh-spin-circle {
+  position: absolute;
+  top: -6px;
+  left: -6px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border-top: 3px solid var(--primary);
+  border-right: 3px solid transparent;
+  border-left: 3px solid transparent;
+  border-bottom: 3px solid transparent;
+  animation: spinCircle 1s linear infinite;
+  filter: drop-shadow(0 0 8px rgba(79,70,229,0.6));
 }
 
-/* ----------------------------------------------------------
-   FLOATING MODEL SELECTOR (Apple Style Tabs)
----------------------------------------------------------- */
+@keyframes spinCircle {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ============================================================
+   FLOATING MODEL SELECTOR — Apple Glass Tabs
+============================================================ */
 .model-select-row {
   display: flex;
   gap: 12px;
-  padding-bottom: 6px;
-  padding-top: 6px;
+  padding: 8px 0;
   overflow-x: auto;
+  scrollbar-width: none;
 }
 
 .model-btn {
   padding: 10px 18px;
   border-radius: 16px;
-  border: 1px solid #d1d5db;
-  font-weight: 500;
+  border: 1px solid rgba(230,230,230,0.7);
+  background: rgba(255,255,255,0.5);
+  backdrop-filter: blur(14px);
   font-size: 0.95rem;
+  font-weight: 500;
   display: flex;
   gap: 8px;
   align-items: center;
-  transition: all 0.25s ease;
-  background: rgba(255,255,255,0.45);
-  backdrop-filter: blur(12px);
+  transition: var(--transition);
 }
 
 .model-btn:hover {
@@ -163,19 +164,19 @@ body::before {
 }
 
 .model-btn.active {
-  transform: scale(1.08);
+  transform: scale(1.09);
   color: white;
   border: none;
-  box-shadow: var(--glow);
-  animation: popIn 0.3s ease-out;
+  background-size: 200% 200%;
+  animation: popIn 0.25s ease;
 }
 
 @keyframes popIn {
-  from { transform: scale(0.75); opacity: 0; }
-  to   { transform: scale(1.08); opacity: 1; }
+  from { transform: scale(0.85); opacity: 0; }
+  to   { transform: scale(1.09); opacity: 1; }
 }
 
-/* Gradient per model */
+/* Gradient versions */
 .model-btn.dahdouh-ai.active {
   background: linear-gradient(90deg, #4f46e5, #06b6d4);
 }
@@ -192,13 +193,14 @@ body::before {
   background: linear-gradient(90deg, #8b5cf6, #06b6d4);
 }
 
-/* ----------------------------------------------------------
-   CHAT BUBBLE POP ANIMATION
----------------------------------------------------------- */
+/* ============================================================
+   CHAT BUBBLES (user, ai, agent, math)
+============================================================ */
 .user-bubble,
 .default-style,
 .math-style,
 .agent-style,
+.search-box,
 .vision-box {
   animation: bubblePop 0.25s ease;
 }
@@ -208,21 +210,17 @@ body::before {
   to   { transform: scale(1); opacity: 1; }
 }
 
-/* ----------------------------------------------------------
-   USER BUBBLE
----------------------------------------------------------- */
+/* User bubble */
 .user-bubble {
   background: var(--primary);
   padding: 14px 18px;
   color: white;
   border-radius: 18px;
-  max-width: 82%;
+  max-width: 80%;
   box-shadow: var(--shadow);
 }
 
-/* ----------------------------------------------------------
-   DEFAULT AI BUBBLE
----------------------------------------------------------- */
+/* AI default bubble */
 .default-style {
   background: white;
   padding: 18px;
@@ -231,90 +229,119 @@ body::before {
   box-shadow: var(--shadow);
 }
 
-.dark .default-style {
-  background: #14161b;
-  border-color: #353535;
-  color: #f4f4f4;
-}
-
-/* ----------------------------------------------------------
-   MATH BUBBLE
----------------------------------------------------------- */
+/* Math */
 .math-style {
   background: #eef3ff;
-  border-left: 6px solid #4f46e5;
+  border-left: 6px solid var(--primary);
   padding: 18px;
   border-radius: 16px;
 }
 
-.dark .math-style {
-  background: #18253c;
-}
-
-/* ----------------------------------------------------------
-   AGENT BUBBLE
----------------------------------------------------------- */
+/* Agent */
 .agent-style {
   background: #0d1117;
   color: #cbd5e1;
-  border-radius: 16px;
   padding: 18px;
+  border-radius: 16px;
   border: 1px solid #30363d;
   font-family: "JetBrains Mono", monospace;
-  font-size: 0.95rem;
 }
 
-.agent-style::before {
-  content: "> Dahdouh Agent Running...";
-  color: #10b981;
-  margin-bottom: 10px;
-  display: block;
-}
-
-/* ----------------------------------------------------------
-   SEARCH BOX
----------------------------------------------------------- */
+/* Search */
 .search-box {
-  background: white;
+  padding: 18px;
   border-radius: 16px;
+  background: white;
   border: 1px solid #e4e4e7;
-  padding: 18px;
-  line-height: 1.65;
   box-shadow: var(--shadow);
 }
 
-/* ----------------------------------------------------------
-   VISION BOX
----------------------------------------------------------- */
+/* Vision */
 .vision-box {
-  background: white;
-  border-radius: 16px;
   padding: 18px;
+  border-radius: 16px;
+  background: white;
   box-shadow: var(--shadow);
 }
 
-/* ----------------------------------------------------------
-   TEXT INPUT BAR (Premium)
----------------------------------------------------------- */
+/* ============================================================
+   PREMIUM CHAT INPUT BOX — GPT/Claude Style
+============================================================ */
 .da-chatbox {
-  background: rgba(255,255,255,0.7);
-  backdrop-filter: blur(18px);
-  border-radius: 20px;
-  border: 1px solid #e5e7eb;
-  padding: 16px;
+  background: rgba(255,255,255,0.9);
+  backdrop-filter: blur(16px);
+  border-radius: 22px;
+  border: 1px solid rgba(220,220,220,0.6);
+  padding: 18px 20px;
   display: flex;
-  gap: 12px;
-  box-shadow: var(--shadow);
-  transition: 0.25s ease;
+  align-items: flex-end;
+  gap: 14px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.04);
+  transition: var(--transition);
+  min-height: 70px;
 }
 
 .da-chatbox:focus-within {
-  box-shadow: 0 0 22px rgba(79,70,229,0.25);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(79,70,229,0.18);
 }
 
-/* ----------------------------------------------------------
-   AI TYPING LOADER (Dahdouh AI Custom)
----------------------------------------------------------- */
+/* Textarea */
+.da-textarea {
+  flex: 1;
+  background: transparent;
+  font-size: 1.18rem;
+  line-height: 1.5;
+  padding: 8px 0;
+  max-height: 250px;
+  overflow-y: auto;
+  resize: none;
+  outline: none;
+}
+
+.da-textarea::placeholder {
+  color: rgba(100,100,100,0.5);
+}
+
+/* Attach */
+.da-attach-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 16px;
+  background: #f0f2f6;
+  display: grid;
+  place-content: center;
+  font-size: 22px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.da-attach-btn:hover {
+  background: #e6e8ef;
+}
+
+/* Send */
+.da-send-btn {
+  width: 50px;
+  height: 50px;
+  background: var(--primary);
+  color: white;
+  border-radius: 50%;
+  display: grid;
+  place-content: center;
+  font-size: 22px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.da-send-btn:hover {
+  background: #3c37d5;
+  box-shadow: 0 0 12px rgba(79,70,229,0.5);
+}
+
+/* ============================================================
+   AI TYPING INDICATOR — FLUID DOTS
+============================================================ */
 .dahdouh-loader {
   display: flex;
   gap: 6px;
@@ -332,58 +359,20 @@ body::before {
 .dahdouh-loader div:nth-child(3) { animation-delay: 0.4s; }
 
 @keyframes loaderAnim {
-  0% { transform: translateY(0); opacity: .3; }
-  50% { transform: translateY(-8px); opacity: 1; }
-  100% { transform: translateY(0); opacity: .3; }
-}
-
-/* ----------------------------------------------------------
-   GENERAL ANIMATIONS
----------------------------------------------------------- */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-.fade-in-element {
-  animation: fadeIn 0.3s ease;
+  0% { opacity: .3; transform: translateY(0); }
+  50% { opacity: 1; transform: translateY(-8px); }
+  100% { opacity: .3; transform: translateY(0); }
 }
 
 /* ============================================================
-   DAHDOUH AI — CIRCLE SPIN LOADER AROUND LOGO
+   FLOATING ANIMATION — AI MESSAGE WHILE TYPING
 ============================================================ */
-.dahdouh-logo-wrapper {
-  position: relative;
-  width: 48px;
-  height: 48px;
+.float-typing {
+  animation: floatTyping 2.2s ease-in-out infinite;
 }
 
-.dahdouh-logo {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  z-index: 2;
-  position: relative;
-}
-
-/* Spinning circle */
-.dahdouh-spin-circle {
-  position: absolute;
-  top: -6px;
-  left: -6px;
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  border-top: 3px solid var(--primary);
-  border-right: 3px solid transparent;
-  border-left: 3px solid transparent;
-  border-bottom: 3px solid transparent;
-  animation: spinCircle 1s linear infinite;
-  z-index: 1;
-  filter: drop-shadow(0 0 6px rgba(79, 70, 229, 0.5));
-}
-
-@keyframes spinCircle {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
+@keyframes floatTyping {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+  100% { transform: translateY(0); }
 }
