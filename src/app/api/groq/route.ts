@@ -1,9 +1,17 @@
 import { NextResponse } from "next/server";
 
+// Define the structure of a single search result item
+interface SearchResult {
+  title: string;
+  snippet: string;
+  link: string;
+}
+
 /* ============================================================
    GOOGLE SEARCH (Custom Search Engine)
 ============================================================ */
-async function runGoogleSearch(query: string) {
+// Explicitly define the return type as Promise<SearchResult[]>
+async function runGoogleSearch(query: string): Promise<SearchResult[]> {
   const apiKey = process.env.GOOGLE_API_KEY;
   const cx = process.env.GOOGLE_CX;
 
@@ -23,6 +31,7 @@ async function runGoogleSearch(query: string) {
     }
 
     if (!json.items) return [];
+    // The items returned by the API are mapped to SearchResult objects
     return json.items.map((item: any) => ({
       title: item.title,
       snippet: item.snippet,
@@ -77,7 +86,7 @@ export async function POST(req: Request) {
        SEARCH MODEL
     ============================================================ */
     if (model === "dahdouh-search") {
-      const results = await runGoogleSearch(prompt);
+      const results = await runGoogleSearch(prompt); // results is of type SearchResult[]
 
       if (results.length === 0) {
         return NextResponse.json({
@@ -86,6 +95,7 @@ export async function POST(req: Request) {
       }
 
       return NextResponse.json({
+        // Fix: 'r' is now correctly inferred as SearchResult due to the function signature
         reply: results
           .map(
             (r, i) =>
@@ -100,13 +110,14 @@ export async function POST(req: Request) {
        AGENT MODEL
     ============================================================ */
     if (model === "dahdouh-agent") {
-      const searchResults = await runGoogleSearch(prompt);
+      const searchResults = await runGoogleSearch(prompt); // searchResults is of type SearchResult[]
 
       const sourcesText =
         searchResults.length > 0
           ? searchResults
               .slice(0, 5)
-              .map((s: any, i: number) => `(${i + 1}) ${s.title} — ${s.link}`)
+              // Fix: Explicitly type 's' as SearchResult here for consistency
+              .map((s: SearchResult, i: number) => `(${i + 1}) ${s.title} — ${s.link}`)
               .join("\n")
           : "No sources.";
 
