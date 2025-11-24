@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 /* ============================================================
-   GOOGLE SEARCH FUNCTION
+   GOOGLE SEARCH (Custom Search Engine)
 ============================================================ */
 async function runGoogleSearch(query: string) {
   const apiKey = process.env.GOOGLE_API_KEY;
@@ -40,18 +40,17 @@ export async function POST(req: Request) {
     }
 
     /* ============================================================
-       MODEL MAP (GROQ MODELS)
+       MODEL MAP (Groq Compatible Models)
     ============================================================ */
     const MODEL_MAP: Record<string, string> = {
-      "dahdouh-ai": "meta-llama/llama-3.3-70b-instruct",
+      "dahdouh-ai": "llama-3.3-70b-versatile",
       "dahdouh-math": "deepseek-math-7b-instruct",
-      "dahdouh-agent": "meta-llama/llama-4-scout-17b-16e-instruct",
-      "dahdouh-search": "meta-llama/llama-3.1-8b-instruct",
-      "dahdouh-vision": "llama-3.2-11b-vision-instruct",
+      "dahdouh-agent": "llama-3.3-70b-versatile",
+      "dahdouh-search": "llama-3.1-8b-instant",
+      "dahdouh-vision": "llama-3.2-11b-vision-preview",
     };
 
-    const selectedModel =
-      MODEL_MAP[model] || MODEL_MAP["dahdouh-ai"];
+    const selectedModel = MODEL_MAP[model] || MODEL_MAP["dahdouh-ai"];
 
     /* ============================================================
        1) SEARCH MODEL — Google CSE
@@ -60,7 +59,6 @@ export async function POST(req: Request) {
       const results = await runGoogleSearch(prompt);
 
       return NextResponse.json({
-        type: "search",
         reply: results
           .map(
             (r: any, i: number) =>
@@ -72,32 +70,20 @@ export async function POST(req: Request) {
     }
 
     /* ============================================================
-       2) AGENT MODEL — Perplexity Style
+       2) AGENT (Perplexity Style)
     ============================================================ */
     if (model === "dahdouh-agent") {
       const searchResults = await runGoogleSearch(prompt);
 
-      const sourcesBlock = searchResults
-        .slice(0, 5)
-        .map((s: any, i: number) => `(${i + 1}) ${s.title} — ${s.link}`)
-        .join("\n");
-
       const agentPrompt = `
-You are **Dahdouh Agent**, a Perplexity-style AI.
-
-RESPOND WITH THIS STRUCTURE:
-1. Final Answer (short, clear)
-2. Bullet points if needed
-3. "Sources:" followed by links
-
-⚠️ Do NOT reveal chain-of-thought.
-⚠️ Do NOT say you searched the web.
-
-User question:
-${prompt}
-
-Web results:
-${sourcesBlock}
+You are Dahdouh Agent. Answer clearly.
+Sources:
+${searchResults
+  .slice(0, 5)
+  .map((s: any, i: number) => `(${i + 1}) ${s.title} — ${s.link}`)
+  .join("\n")}
+      
+User question: ${prompt}
 `;
 
       const res = await fetch(
@@ -109,7 +95,7 @@ ${sourcesBlock}
             Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
           },
           body: JSON.stringify({
-            model: "meta-llama/llama-4-scout-17b-16e-instruct",
+            model: MODEL_MAP["dahdouh-agent"],
             messages: [{ role: "user", content: agentPrompt }],
             temperature: 0.3,
           }),
@@ -119,9 +105,8 @@ ${sourcesBlock}
       const data = await res.json();
 
       return NextResponse.json({
-        type: "agent",
         reply: data?.choices?.[0]?.message?.content || "No response.",
-        sources: searchResults.slice(0, 5),
+        sources: searchResults,
       });
     }
 
@@ -129,44 +114,37 @@ ${sourcesBlock}
        3) MATH MODEL
     ============================================================ */
     let finalPrompt = prompt;
-
     if (model === "dahdouh-math") {
       finalPrompt = `
-You are **Dahdouh Math**, an advanced math solver.
+Solve this math problem.
+Explain step-by-step.
+Use LaTeX formatting.
 
-Return:
-- Step-by-step solution
-- LaTeX formatting
-- Final answer clearly highlighted
-
-User Problem:
+Problem:
 ${prompt}
 `;
     }
 
     /* ============================================================
-       4) VISION MODEL — Image + Text
+       4) VISION MODEL (correct Groq format)
     ============================================================ */
     if (model === "dahdouh-vision") {
-      const messages: any[] = [];
-
-      if (prompt) {
-        messages.push({ role: "user", content: prompt });
-      }
-
-      if (imgBase64) {
-        messages.push({
+      const messages: any[] = [
+        {
           role: "user",
           content: [
             {
-              type: "input_image",
-              image: imgBase64,
-            },
-            {
-              type: "text",
-              text: prompt || "Describe this image.",
+              type: "input_text",
+              text: prompt || "Describe the image.",
             },
           ],
+        },
+      ];
+
+      if (imgBase64) {
+        messages[0].content.push({
+          type: "input_image",
+          image_url: imgBase64,
         });
       }
 
@@ -179,9 +157,8 @@ ${prompt}
             Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
           },
           body: JSON.stringify({
-            model: "llama-3.2-11b-vision-instruct",
+            model: MODEL_MAP["dahdouh-vision"],
             messages,
-            temperature: 0.4,
           }),
         }
       );
@@ -189,7 +166,6 @@ ${prompt}
       const data = await res.json();
 
       return NextResponse.json({
-        type: "vision",
         reply:
           data?.choices?.[0]?.message?.content ||
           "No vision response.",
@@ -197,7 +173,7 @@ ${prompt}
     }
 
     /* ============================================================
-       5) NORMAL AI / DEFAULT MODE
+       5) DEFAULT NORMAL CHAT
     ============================================================ */
     const response = await fetch(
       "https://api.groq.com/openai/v1/chat/completions",
@@ -218,14 +194,14 @@ ${prompt}
     const data = await response.json();
 
     return NextResponse.json({
-      type: "ai",
       reply:
         data?.choices?.[0]?.message?.content ||
         "No response.",
     });
   } catch (err: any) {
+    console.error("API ERROR:", err);
     return NextResponse.json(
-      { error: "Server Error", detail: err.message },
+      { error: "AI Request Failed", detail: err.message },
       { status: 500 }
     );
   }
