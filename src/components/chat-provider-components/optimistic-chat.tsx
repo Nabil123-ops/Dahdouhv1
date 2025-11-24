@@ -19,21 +19,23 @@ const OptimisticChat = ({
     optimisticResponse,
     inputImgName,
     setOptimisticResponse,
-    setOptimisticPrompt
+    setOptimisticPrompt,
   } = geminiZustand();
 
-  // Normalize DB messages (Fix to avoid undefined fields)
+  /* ============================================================
+     NORMALIZE DATABASE MESSAGES (FLAT STRUCTURE)
+  ============================================================ */
   const normalizedMessages =
     message?.map((m) => ({
       _id: m._id || Date.now().toString(),
-      message: {
-        userPrompt: m.message?.userPrompt ?? m.userPrompt ?? "",
-        llmResponse: m.message?.llmResponse ?? m.llmResponse ?? "",
-        imgName: m.message?.imgName ?? m.imgName ?? undefined,
-      },
+      userPrompt: m.userPrompt ?? "",
+      llmResponse: m.llmResponse ?? "",
+      imgName: m.imgName ?? undefined,
     })) || [];
 
-  // Optimistic UI state
+  /* ============================================================
+     OPTIMISTIC UI STATE
+  ============================================================ */
   const [optimisticChats, addOptimisticChat] = useOptimistic(
     normalizedMessages,
     (state, newChat: MessageProps) => [...state, newChat]
@@ -43,14 +45,12 @@ const OptimisticChat = ({
     if (optimisticPrompt && optimisticResponse) {
       addOptimisticChat({
         _id: Date.now().toString(),
-        message: {
-          userPrompt: optimisticPrompt,
-          llmResponse: optimisticResponse,
-          imgName: inputImgName ?? undefined,
-        },
+        userPrompt: optimisticPrompt,
+        llmResponse: optimisticResponse,
+        imgName: inputImgName ?? undefined,
       });
 
-      // Reset after adding
+      // Reset optimistic state
       setTimeout(() => {
         setOptimisticPrompt(null);
         setOptimisticResponse(null);
@@ -65,9 +65,9 @@ const OptimisticChat = ({
           <ChatProvider
             chatUniqueId={chat._id}
             imgInfo={{ imgSrc: image, imgAlt: name }}
-            imgName={chat.message.imgName}
-            llmResponse={chat.message.llmResponse}
-            userPrompt={chat.message.userPrompt}
+            imgName={chat.imgName}
+            llmResponse={chat.llmResponse}
+            userPrompt={chat.userPrompt}
           />
         </div>
       ))}
