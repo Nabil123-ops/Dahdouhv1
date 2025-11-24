@@ -76,7 +76,10 @@ const OptimisticChat = ({
         <div key={chat._id} className="my-16 mt-10">
           <ChatProvider
             chatUniqueId={chat._id}
-            imgInfo={{ imgSrc: image, imgAlt: name }}
+            imgInfo={{
+  imgSrc: chat.llmResponse ? "/assets/logo.jpg" : image,
+  imgAlt: chat.llmResponse ? "Dahdouh AI" : name,
+  }}
             imgName={chat.imgName}
             llmResponse={chat.llmResponse}
             userPrompt={chat.userPrompt}
