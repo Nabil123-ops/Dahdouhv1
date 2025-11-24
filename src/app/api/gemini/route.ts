@@ -63,7 +63,7 @@ export async function POST(req: Request) {
         type: "search",
         reply: results
           .map(
-            (r, i) =>
+            (r: any, i: number) =>
               `${i + 1}. **${r.title}**\n${r.snippet}\n${r.link}\n`
           )
           .join("\n"),
@@ -79,7 +79,7 @@ export async function POST(req: Request) {
 
       const sourcesBlock = searchResults
         .slice(0, 5)
-        .map((s, i) => `(${i + 1}) ${s.title} — ${s.link}`)
+        .map((s: any, i: number) => `(${i + 1}) ${s.title} — ${s.link}`)
         .join("\n");
 
       const agentPrompt = `
@@ -148,7 +148,7 @@ ${prompt}
        4) VISION MODEL — Image + Text
     ============================================================ */
     if (model === "dahdouh-vision") {
-      const messages = [];
+      const messages: any[] = [];
 
       if (prompt) {
         messages.push({ role: "user", content: prompt });
@@ -197,7 +197,7 @@ ${prompt}
     }
 
     /* ============================================================
-       5) NORMAL AI / DEFAULT MODE (Dahdouh AI)
+       5) NORMAL AI / DEFAULT MODE
     ============================================================ */
     const response = await fetch(
       "https://api.groq.com/openai/v1/chat/completions",
