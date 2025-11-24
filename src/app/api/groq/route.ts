@@ -54,12 +54,12 @@ export async function POST(req: Request) {
       );
 
     const MODEL_MAP = {
-      "dahdouh-ai": "llama-3.1-70b-versatile",
-      "dahdouh-math": "groq/compound-mini",
-      "dahdouh-search": "openai/gpt-oss-20b",
-      "dahdouh-agent": "llama-3.1-70b-versatile",
-      "dahdouh-vision": "meta-llama/llama-4-scout-17b-16e-instruct",
-    };
+  "dahdouh-ai": "llama-3.3-70b-versatile",
+  "dahdouh-math": "groq/compound-mini",
+  "dahdouh-search": "openai/gpt-oss-20b",
+  "dahdouh-agent": "meta-llama/llama-4-scout-17b-16e-instruct",
+  "dahdouh-vision": "meta-llama/llama-4-scout-17b-16e-instruct",
+};
 
     type ModelKey = keyof typeof MODEL_MAP;
     const selectedModel = MODEL_MAP[(model as ModelKey) || "dahdouh-ai"];
