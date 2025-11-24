@@ -52,7 +52,7 @@ const SideBar = ({ user, sidebarList }: { user?: User; sidebarList: any }) => {
             {/* Dahdouh AI Logo on Mobile */}
             <div className="block md:hidden">
               <Image
-                src="/assets/dahdouh-logo.png"
+                src="/assets/logo.jpg"
                 width={40}
                 height={40}
                 alt="Dahdouh AI"
