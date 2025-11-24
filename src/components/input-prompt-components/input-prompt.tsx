@@ -104,7 +104,9 @@ const InputPrompt = ({ user }: { user?: User }) => {
         typeof rawReply === "string" ? rawReply : JSON.stringify(rawReply);
 
       // 🔵 Optimistic AI reply
-      setOptimisticResponse(reply);
+      setOptimisticResponse(
+  typeof reply === "string" ? reply : JSON.stringify(reply)
+);
 
       // 🔵 FIX: Store real AI reply into Zustand to prevent message disappearing
       setCurrChat("llmResponse", reply);
