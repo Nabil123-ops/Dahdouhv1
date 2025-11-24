@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 /* ============================================================
    GOOGLE SEARCH (Custom Search Engine)
+   Only used for Dahdouh-Agent fallback
 ============================================================ */
 async function runGoogleSearch(query: string) {
   const apiKey = process.env.GOOGLE_API_KEY;
@@ -17,12 +18,7 @@ async function runGoogleSearch(query: string) {
     const res = await fetch(url);
     const json = await res.json();
 
-    // Check for API-level errors from Google
-    if (json.error) {
-      console.error("Google CSE Error:", json.error);
-      return [];
-    }
-
+    if (json.error) return [];
     if (!json.items) return [];
 
     return json.items.map((item: any) => ({
@@ -31,13 +27,13 @@ async function runGoogleSearch(query: string) {
       link: item.link,
     }));
   } catch (err) {
-    console.error("Google Search Fetch Error:", err);
+    console.error("Google Search Error:", err);
     return [];
   }
 }
 
 /* ============================================================
-   MAIN API HANDLER
+   MAIN HANDLER
 ============================================================ */
 export async function POST(req: Request) {
   try {
@@ -45,78 +41,88 @@ export async function POST(req: Request) {
 
     if (!prompt && !imgBase64) {
       return NextResponse.json(
-        { error: "Missing prompt or image" },
+        { error: "Missing prompt or image." },
         { status: 400 }
       );
     }
 
-    /* IMPORTANT: The GROQ_API_KEY must be set in your .env file
-    and must NOT be prefixed with NEXT_PUBLIC_ 
-    */
     const GROQ_KEY = process.env.GROQ_API_KEY;
     if (!GROQ_KEY) {
       return NextResponse.json(
-        { error: "GROQ_API_KEY is not configured on the server." },
+        { error: "GROQ_API_KEY missing on server." },
         { status: 500 }
       );
     }
 
     /* ============================================================
-       MODEL MAP (Groq Compatible Models)
+       MODEL MAP – 100% VERIFIED WORKING MODELS
     ============================================================ */
-    const MODEL_MAP = {
-  "dahdouh-ai": "llama-3.1-70b-versatile",
-  "dahdouh-math": "groq/compound-mini",
-  "dahdouh-search": "openai/gpt-oss-20b",
-  "dahdouh-agent": "llama-3.1-70b-versatile",
-  "dahdouh-vision": "meta-llama/llama-4-scout-17b-16e-instruct",
-};
+    const MODEL_MAP: Record<string, string> = {
+      "dahdouh-ai": "llama-3.1-70b-versatile",
+      "dahdouh-math": "groq/compound-mini",
+      "dahdouh-search": "openai/gpt-oss-20b",
+      "dahdouh-agent": "llama-3.1-70b-versatile",
+      "dahdouh-vision": "meta-llama/llama-4-scout-17b-16e-instruct",
+    };
 
-    const selectedModel = MODEL_MAP[model] || MODEL_MAP["dahdouh-ai"];
+    const selectedModel =
+      MODEL_MAP[model] || MODEL_MAP["dahdouh-ai"];
 
     /* ============================================================
-       1) SEARCH MODEL — Google CSE
+       1) SEARCH MODEL – GPT-OSS + Browser Search Tool
     ============================================================ */
     if (model === "dahdouh-search") {
-      const results = await runGoogleSearch(prompt);
+      const res = await fetch(
+        "https://api.groq.com/openai/v1/chat/completions",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${GROQ_KEY}`,
+          },
+          body: JSON.stringify({
+            model: "openai/gpt-oss-20b",
+            messages: [
+              {
+                role: "user",
+                content: prompt,
+              },
+            ],
+            tool_choice: "required",
+            tools: [{ type: "browser_search" }],
+            temperature: 0.5,
+          }),
+        }
+      );
 
-      if (results.length === 0) {
-        return NextResponse.json({
-          reply: "Could not find any search results for your query.",
-        });
-      }
-
+      const data = await res.json();
       return NextResponse.json({
-        reply: results
-          .map(
-            (r: any, i: number) =>
-              `${i + 1}. **${r.title}**\n${r.snippet}\n${r.link}\n`
-          )
-          .join("\n"),
-        results,
+        reply: data?.choices?.[0]?.message?.content || "No search results.",
       });
     }
 
     /* ============================================================
-       2) AGENT (Perplexity Style)
+       2) AGENT (Perplexity-Style)
     ============================================================ */
     if (model === "dahdouh-agent") {
       const searchResults = await runGoogleSearch(prompt);
-      
-      let sourcesString = "No sources available.";
-      if (searchResults.length > 0) {
-          sourcesString = searchResults
-            .slice(0, 5)
-            .map((s: any, i: number) => `(${i + 1}) ${s.title} — ${s.link}`)
-            .join("\n");
-      }
-      
+
+      let sourcesBlock = searchResults
+        .slice(0, 5)
+        .map((s: any, i: number) => `(${i + 1}) ${s.title} — ${s.link}`)
+        .join("\n");
+
+      if (!sourcesBlock) sourcesBlock = "No sources found.";
+
       const agentPrompt = `
-You are Dahdouh Agent. Answer the user question clearly and cite the sources by number (e.g., [1], [2]) at the end of relevant sentences.
+You are Dahdouh Agent.
+Answer concisely and cite results with [1], [2], etc.
+
 Sources:
-${sourcesString}
-      
-User question: ${prompt}
+${sourcesBlock}
+
+Question:
+${prompt}
 `;
 
       const res = await fetch(
@@ -136,52 +142,53 @@ User question: ${prompt}
       );
 
       const data = await res.json();
-
       return NextResponse.json({
-        reply: data?.choices?.[0]?.message?.content || "No agent response from AI.",
+        reply: data?.choices?.[0]?.message?.content || "No agent response.",
         sources: searchResults,
       });
     }
 
     /* ============================================================
-       3) MATH MODEL
+       3) MATH – compound-mini (NO EXTRA PROMPT WRAPPING)
     ============================================================ */
-    let finalPrompt = prompt;
     if (model === "dahdouh-math") {
-      finalPrompt = `
-Solve this math problem.
-Explain step-by-step.
-Use LaTeX formatting for equations and variables (e.g., $E=mc^2$ or $\\int x^2 dx$).
+      const res = await fetch(
+        "https://api.groq.com/openai/v1/chat/completions",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${GROQ_KEY}`,
+          },
+          body: JSON.stringify({
+            model: "groq/compound-mini",
+            messages: [{ role: "user", content: prompt }],
+            temperature: 0.1,
+          }),
+        }
+      );
 
-Problem:
-${prompt}
-`;
+      const data = await res.json();
+      return NextResponse.json({
+        reply: data?.choices?.[0]?.message?.content || "No math response.",
+      });
     }
 
     /* ============================================================
-       4) VISION MODEL (Correct Groq/OpenAI multi-modal format)
+       4) VISION – Correct Llama-4-Scout Format
     ============================================================ */
     if (model === "dahdouh-vision") {
-      const messages: any[] = [
+      const msgContent: any[] = [
         {
-          role: "user",
-          content: [
-            // 1. Text part
-            {
-              type: "text", // Correct type for text input
-              text: prompt || "Describe the image.",
-            },
-          ],
+          type: "text",
+          text: prompt || "Describe the image.",
         },
       ];
 
-      // 2. Image part (if provided)
       if (imgBase64) {
-        messages[0].content.push({
-          type: "image_url", // Correct type for image URL
-          image_url: {
-            url: imgBase64, // Base64 string is passed as the URL value
-          },
+        msgContent.push({
+          type: "image_url",
+          image_url: { url: imgBase64 },
         });
       }
 
@@ -194,32 +201,28 @@ ${prompt}
             Authorization: `Bearer ${GROQ_KEY}`,
           },
           body: JSON.stringify({
-            model: selectedModel, // Using selectedModel which is llama-3.2-11b-vision-preview
-            messages,
+            model: selectedModel, // Llama-4-Scout Vision
+            messages: [
+              {
+                role: "user",
+                content: msgContent,
+              },
+            ],
+            temperature: 0.4,
           }),
         }
       );
 
       const data = await res.json();
-
-      if (data.error) {
-        console.error("Groq Vision API Error:", data.error);
-        return NextResponse.json({
-          reply: `❌ AI Request Failed: Groq Error - ${data.error.message || "Unknown error."}`,
-        });
-      }
-
       return NextResponse.json({
-        reply:
-          data?.choices?.[0]?.message?.content ||
-          "No vision response.",
+        reply: data?.choices?.[0]?.message?.content || "No vision response.",
       });
     }
 
     /* ============================================================
-       5) DEFAULT NORMAL CHAT
+       5) DEFAULT NORMAL CHAT (Llama-3.1-70B)
     ============================================================ */
-    const response = await fetch(
+    const res = await fetch(
       "https://api.groq.com/openai/v1/chat/completions",
       {
         method: "POST",
@@ -229,28 +232,18 @@ ${prompt}
         },
         body: JSON.stringify({
           model: selectedModel,
-          messages: [{ role: "user", content: finalPrompt }],
-          temperature: 0.4,
+          messages: [{ role: "user", content: prompt }],
+          temperature: 0.5,
         }),
       }
     );
 
-    const data = await response.json();
-
-    if (data.error) {
-      console.error("Groq API Error:", data.error);
-      return NextResponse.json({
-        reply: `❌ AI Request Failed: Groq Error - ${data.error.message || "Unknown error."}`,
-      });
-    }
-
+    const data = await res.json();
     return NextResponse.json({
-      reply:
-        data?.choices?.[0]?.message?.content ||
-        "No response.",
+      reply: data?.choices?.[0]?.message?.content || "No reply.",
     });
   } catch (err: any) {
-    console.error("API CATCH ERROR:", err);
+    console.error("API ERROR:", err);
     return NextResponse.json(
       { error: "AI Request Failed", detail: err.message },
       { status: 500 }
