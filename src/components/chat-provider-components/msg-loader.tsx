@@ -6,7 +6,6 @@ import Image from "next/image";
 import React from "react";
 import Markdown from "react-markdown";
 import root from "react-shadow/styled-components";
-import GradientLoader from "./gradient-loader";
 import { MdOutlineImage } from "react-icons/md";
 
 const MsgLoader = ({
@@ -23,10 +22,10 @@ const MsgLoader = ({
   return (
     <div key="loader" className="my-16 mt-10 fade-in-element">
 
-      {/* =============== USER MESSAGE LOADING =============== */}
+      {/* ================= USER PROMPT ================= */}
       <div className="w-full h-fit flex items-start gap-3">
         <Image
-          src={image}          // User profile image
+          src={image}   
           alt={name}
           width={38}
           height={38}
@@ -40,7 +39,7 @@ const MsgLoader = ({
         />
       </div>
 
-      {/* =============== IMAGE PREVIEW (IF EXISTS) =============== */}
+      {/* ================= IMAGE PREVIEW ================= */}
       {inputImgName && (
         <div className="w-full mt-3 overflow-hidden">
           <div className="p-4 max-w-full w-fit bg-rtlLight dark:bg-rtlDark rounded-md flex items-start gap-2">
@@ -52,21 +51,30 @@ const MsgLoader = ({
 
       <div className="w-full flex justify-end h-10 items-center" />
 
-      {/* =============== AI LOADING + AI RESPONSE =============== */}
-      <div id="new-chat" className="flex md:flex-row flex-col w-full items-start gap-4">
+      {/* ================= AI LOADING ================= */}
+      <div className="flex items-start gap-4 w-full">
 
-        {/* AI LOGO */}
-        <Image
-          src="/assets/logo.jpg"
-          alt="Dahdouh AI"
-          width={40}
-          height={40}
-          className="rounded-full animate-pulse"
-        />
+        {/* AI LOGO + SPINNING RING */}
+        <div className="dahdouh-logo-wrapper">
+          <Image
+            src="/assets/logo.jpg"
+            alt="Dahdouh AI"
+            width={40}
+            height={40}
+            className="dahdouh-logo"
+          />
 
-        {/* LOADER OR FINAL REPLY */}
+          {/* This is the ring around the logo */}
+          <div className="dahdouh-spin-circle"></div>
+        </div>
+
+        {/* LOADER OR FINAL AI RESPONSE */}
         {!currChat.llmResponse ? (
-          <GradientLoader />
+          <div className="flex items-center">
+            <div className="typing-dots">
+              <div></div><div></div><div></div>
+            </div>
+          </div>
         ) : (
           <root.div className="w-full shadowDiv -translate-y-4">
             <FormatOutput>
