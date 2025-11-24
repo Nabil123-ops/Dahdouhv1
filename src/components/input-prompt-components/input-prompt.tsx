@@ -36,6 +36,8 @@ const InputPrompt = ({ user }: { user?: User }) => {
 
   const {
     currChat,
+    inputImgName,
+    setInputImgName,
     setCurrChat,
     setToast,
     setMsgLoader,
@@ -46,7 +48,6 @@ const InputPrompt = ({ user }: { user?: User }) => {
   } = geminiZustand();
 
   const [inputImg, setInputImg] = useState<File | null>(null);
-  const [inputImgName, setInputImgName] = useState<string | null>(null);
 
   /* ======================================================
      SEND MESSAGE
@@ -63,14 +64,15 @@ const InputPrompt = ({ user }: { user?: User }) => {
     try {
       setMsgLoader(true);
 
+      // Chat ID for this session
       const chatID = (chat as string) || nanoid();
       router.push(`/app/${chatID}`);
 
+      // 🔵 Optimistic user prompt
       setOptimisticPrompt(prompt);
 
-      /* Convert image to Base64 for Vision model */
+      /* IMAGE → BASE64 */
       let imgBase64 = null;
-
       if (inputImg) {
         const buffer = await inputImg.arrayBuffer();
         imgBase64 = `data:${inputImg.type};base64,${Buffer.from(buffer).toString(
@@ -78,8 +80,8 @@ const InputPrompt = ({ user }: { user?: User }) => {
         )}`;
       }
 
-      /* SEND TO API */
-      const response = await fetch("/api/groq", {
+      /* SEND TO AI */
+      const res = await fetch("/api/groq", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -89,36 +91,53 @@ const InputPrompt = ({ user }: { user?: User }) => {
         }),
       });
 
-      const data = await response.json();
+      const data = await res.json();
 
-      const reply =
+      // AI Response
+      const rawReply =
         data?.reply ||
         data?.error ||
         data?.results ||
         "⚠ No response from AI.";
 
+      const reply =
+        typeof rawReply === "string" ? rawReply : JSON.stringify(rawReply);
+
+      // 🔵 Optimistic AI reply
       setOptimisticResponse(reply);
 
-      /* SAVE TO DATABASE */
+      // 🔵 FIX: Store real AI reply into Zustand to prevent message disappearing
+      setCurrChat("llmResponse", reply);
+
+      /* SAVE TO MONGODB */
       await createChat({
         chatID,
         userID: user.id as string,
         imgName: inputImgName ?? undefined,
         userPrompt: prompt,
-        llmResponse: typeof reply === "string" ? reply : JSON.stringify(reply),
+        llmResponse: reply,
       });
 
+      /* RESET UI */
       setMsgLoader(false);
       setInputImg(null);
       setInputImgName(null);
 
-      setTimeout(() => setCurrChat("userPrompt", ""), 200);
+      setTimeout(() => setCurrChat("userPrompt", ""), 150);
     } catch (err) {
-      console.error(err);
+      console.error("AI Error:", err);
       setMsgLoader(false);
       setOptimisticResponse("❌ AI Request Failed.");
     }
-  }, [currChat.userPrompt, user, chat, chosenModel]);
+  }, [
+    currChat.userPrompt,
+    user,
+    chat,
+    chosenModel,
+    inputImg,
+    inputImgName,
+    setCurrChat,
+  ]);
 
   /* ======================================================
      IMAGE UPLOAD
@@ -127,6 +146,8 @@ const InputPrompt = ({ user }: { user?: User }) => {
     if (!e.target.files?.length) return;
     const file = e.target.files[0];
     setInputImg(file);
+
+    // 🔵 FIX: Sync to Zustand so optimistic UI receives correct imgName
     setInputImgName(file.name);
   };
 
@@ -164,6 +185,7 @@ const InputPrompt = ({ user }: { user?: User }) => {
     <div className="w-full max-w-3xl mx-auto px-4 pb-6">
       <ModelSelector />
 
+      {/* Uploaded Image Preview */}
       {inputImg && (
         <div className="da-image-preview">
           <MdImageSearch className="text-3xl" />
@@ -179,6 +201,7 @@ const InputPrompt = ({ user }: { user?: User }) => {
         </div>
       )}
 
+      {/* Chatbox */}
       <div className="da-chatbox">
         <label className="da-attach-btn cursor-pointer">
           +
