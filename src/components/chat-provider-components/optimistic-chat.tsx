@@ -22,25 +22,23 @@ const OptimisticChat = ({
     setOptimisticPrompt,
   } = geminiZustand();
 
-  // FIX: Normalize DB messages → FLAT structure
-  const normalizedMessages =
+  // ⭐ FORCE TS TO USE MessageProps[] (VERY IMPORTANT FIX)
+  const normalizedMessages: MessageProps[] =
     message?.map((m) => ({
       _id: m._id || Date.now().toString(),
-
-      // FLAT fields
-      chatID: m.chatID ?? undefined,
-      userID: m.userID ?? undefined,
+      chatID: m.chatID,
+      userID: m.userID,
       userPrompt: m.userPrompt ?? "",
       llmResponse: m.llmResponse ?? "",
-      imgName: m.imgName ?? undefined,
+      imgName: m.imgName,
       createdAt: m.createdAt,
       updatedAt: m.updatedAt,
     })) || [];
 
-  // FIX: Optimistic UI with correct MessageProps structure
-  const [optimisticChats, addOptimisticChat] = useOptimistic(
+  // ⭐ ALSO FORCE optimistic state to be MessageProps[]
+  const [optimisticChats, addOptimisticChat] = useOptimistic<MessageProps[]>(
     normalizedMessages,
-    (state, newChat: MessageProps) => [...state, newChat]
+    (state: MessageProps[], newChat: MessageProps) => [...state, newChat]
   );
 
   useEffect(() => {
