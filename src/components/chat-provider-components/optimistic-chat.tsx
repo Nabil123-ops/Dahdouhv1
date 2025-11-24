@@ -22,18 +22,22 @@ const OptimisticChat = ({
     setOptimisticPrompt,
   } = geminiZustand();
 
-  /* Normalize DB messages */
+  // FIX: Normalize DB messages → FLAT structure
   const normalizedMessages =
     message?.map((m) => ({
       _id: m._id || Date.now().toString(),
-      chatID: m.chatID,
-      userID: m.userID,
+
+      // FLAT fields
+      chatID: m.chatID ?? undefined,
+      userID: m.userID ?? undefined,
       userPrompt: m.userPrompt ?? "",
       llmResponse: m.llmResponse ?? "",
       imgName: m.imgName ?? undefined,
+      createdAt: m.createdAt,
+      updatedAt: m.updatedAt,
     })) || [];
 
-  /* Optimistic UI */
+  // FIX: Optimistic UI with correct MessageProps structure
   const [optimisticChats, addOptimisticChat] = useOptimistic(
     normalizedMessages,
     (state, newChat: MessageProps) => [...state, newChat]
@@ -43,6 +47,8 @@ const OptimisticChat = ({
     if (optimisticPrompt && optimisticResponse) {
       addOptimisticChat({
         _id: Date.now().toString(),
+        chatID: undefined,
+        userID: undefined,
         userPrompt: optimisticPrompt,
         llmResponse: optimisticResponse,
         imgName: inputImgName ?? undefined,
