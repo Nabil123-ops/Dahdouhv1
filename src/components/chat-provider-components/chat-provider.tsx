@@ -23,23 +23,30 @@ const detectModelUI = (model: string) => {
 };
 
 /* ============================================================
-   SEARCH RESULTS
+   SEARCH RESULTS UI
 ============================================================ */
 const SearchResultCard = ({ text }: { text: string }) => {
-  const lines = text.split("\n").filter((l) => l.trim() !== "");
+  const blocks = text
+    .split("\n\n")
+    .map((b) => b.trim())
+    .filter(Boolean);
+
   return (
-    <div className="search-box fade-in-element">
-      {lines.map((line, i) => (
-        <p key={i} className="search-line">
-          {line}
-        </p>
+    <div className="space-y-4 fade-in-element">
+      {blocks.map((block, i) => (
+        <div
+          key={i}
+          className="p-4 border rounded-xl bg-white/60 dark:bg-black/40 shadow-sm search-line"
+        >
+          <ReactMarkdown>{block}</ReactMarkdown>
+        </div>
       ))}
     </div>
   );
 };
 
 /* ============================================================
-   VISION UI
+   VISION RESULT UI
 ============================================================ */
 const VisionCard = ({
   response,
@@ -54,10 +61,10 @@ const VisionCard = ({
         <div className="mb-4">
           <Image
             src={imgSrc}
-            alt="Uploaded Image"
+            alt="Uploaded image"
             width={260}
             height={260}
-            className="rounded-xl shadow-md"
+            className="rounded-xl shadow-lg"
           />
         </div>
       )}
@@ -96,7 +103,7 @@ const ChatProvider = ({
 
   return (
     <>
-      {/* USER MESSAGE */}
+      {/* USER PROMPT */}
       <div className="flex items-start gap-3 mb-3 fade-in-element">
         <Image
           src={imgInfo.imgSrc}
@@ -109,7 +116,7 @@ const ChatProvider = ({
         <div className="user-bubble">{userPrompt}</div>
       </div>
 
-      {/* USER IMAGE */}
+      {/* USER IMAGE PREVIEW */}
       {imgName && (
         <div className="img-preview fade-in-element">
           <p className="font-semibold">📷 {imgName}</p>
@@ -129,8 +136,8 @@ const ChatProvider = ({
       </div>
 
       {/* AI RESPONSE */}
-      <div className="flex items-start gap-4 mt-6">
-        {/* AI AVATAR */}
+      <div className="flex items-start gap-4 mt-6 fade-in-element">
+        {/* DAHDOUH AI LOGO */}
         <Image
           src="/assets/logo.jpg"
           alt="Dahdouh AI"
@@ -139,14 +146,11 @@ const ChatProvider = ({
           className="rounded-full shadow-md"
         />
 
-        {/* CONTENT AREA */}
         <root.div className="ai-wrapper fade-in-element">
-          {/* SEARCH MODE */}
-          {modelUI === "search" && (
-            <SearchResultCard text={llmResponse} />
-          )}
+          {/* SEARCH MODEL */}
+          {modelUI === "search" && <SearchResultCard text={llmResponse} />}
 
-          {/* VISION MODE */}
+          {/* VISION MODEL */}
           {modelUI === "vision" && (
             <VisionCard response={llmResponse} imgSrc={imgInfo.imgSrc} />
           )}
