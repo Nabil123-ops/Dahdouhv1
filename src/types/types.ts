@@ -12,12 +12,14 @@ export type SessionProps = {
 };
 
 /* ===========================================
-   FIXED: Chat messages are FLAT (no "message" field)
+   FLAT CHAT MESSAGE STRUCTURE (MongoDB model)
+   chatID & userID MUST be optional because
+   optimistic UI does not include them yet.
 =========================================== */
 export type MessageProps = {
   _id: string;
-  chatID: string;
-  userID: string;
+  chatID?: string;        // OPTIONAL
+  userID?: string;        // OPTIONAL
   userPrompt: string;
   llmResponse: string;
   imgName?: string;
@@ -25,7 +27,9 @@ export type MessageProps = {
   updatedAt?: string;
 };
 
-/* Chat Section */
+/* ===========================================
+   CHAT SECTION STRUCTURE
+=========================================== */
 export type ChatSectionProps = {
   data: {
     message?: MessageProps[];
