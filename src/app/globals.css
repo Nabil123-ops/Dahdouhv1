@@ -365,14 +365,140 @@ animation: loaderAnim 1.4s infinite ease-in-out;
 }
 
 /* ============================================================
-FLOATING ANIMATION — AI MESSAGE WHILE TYPING
+ULTRA PREMIUM FLOATING ANIMATION — DAHDOUH AI (VisionOS Level)
 ============================================================ */
+
+/* Smooth floating effect with 3D tilt */
 .float-typing {
-  animation: floatTyping 2.2s ease-in-out infinite;
+  animation: floatTyping 2.4s ease-in-out infinite,
+             tilt3d 4s ease-in-out infinite;
+  transform-style: preserve-3d;
+  will-change: transform, filter;
+  position: relative;
 }
 
+/* Liquid distortion behind the message */
+.float-typing::before {
+  content: "";
+  position: absolute;
+  inset: -12px;
+  background: radial-gradient(circle, rgba(79,70,229,0.25), transparent 70%);
+  filter: blur(24px);
+  animation: liquidPulse 3s ease-in-out infinite;
+  z-index: -1;
+  border-radius: 22px;
+}
+
+/* VisionOS fog layer */
+.float-typing::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  backdrop-filter: blur(22px) brightness(1.1);
+  border-radius: 20px;
+  opacity: 0.25;
+  animation: fogFloat 5s ease-in-out infinite alternate;
+  z-index: -2;
+}
+
+/* Floating up/down */
 @keyframes floatTyping {
   0% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
+  50% { transform: translateY(-10px); }
   100% { transform: translateY(0); }
+}
+
+/* 3D tilt */
+@keyframes tilt3d {
+  0%   { transform: rotateX(0deg) rotateY(0deg); }
+  25%  { transform: rotateX(4deg) rotateY(-3deg); }
+  50%  { transform: rotateX(-3deg) rotateY(3deg); }
+  75%  { transform: rotateX(3deg) rotateY(-2deg); }
+  100% { transform: rotateX(0deg) rotateY(0deg); }
+}
+
+/* Liquid expanding pulse */
+@keyframes liquidPulse {
+  0%   { transform: scale(0.95); opacity: 0.25; }
+  50%  { transform: scale(1.03); opacity: 0.40; }
+  100% { transform: scale(0.95); opacity: 0.25; }
+}
+
+/* VisionOS soft fog motion */
+@keyframes fogFloat {
+  0% { opacity: 0.15; transform: translateY(0); }
+  100% { opacity: 0.35; transform: translateY(-10px); }
+}
+
+
+/* ============================================================
+LOGO ORBIT + SHINE + GLOW (Ultra Premium)
+============================================================ */
+.dahdouh-logo-wrapper {
+  position: relative;
+  width: 50px;
+  height: 50px;
+  animation: logoFloat 4s ease-in-out infinite;
+}
+
+/* Logo floating */
+@keyframes logoFloat {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+  100% { transform: translateY(0); }
+}
+
+.dahdouh-logo {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  animation: logoGlow 3s ease-in-out infinite;
+  position: relative;
+  z-index: 3;
+}
+
+/* Glow + Shine */
+@keyframes logoGlow {
+  0%   { filter: drop-shadow(0 0 12px rgba(79,70,229,0.5)); }
+  50%  { filter: drop-shadow(0 0 22px rgba(79,70,229,0.8)); }
+  100% { filter: drop-shadow(0 0 12px rgba(79,70,229,0.5)); }
+}
+
+/* Orbiting ring */
+.dahdouh-spin-circle {
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  border-top-color: var(--primary);
+  border-left-color: var(--secondary);
+  animation: orbitSpin 1.4s linear infinite;
+  filter: drop-shadow(0 0 12px rgba(79,70,229,0.6));
+  z-index: 1;
+}
+
+@keyframes orbitSpin {
+  from { transform: rotate(0deg) scale(1); }
+  to   { transform: rotate(360deg) scale(1); }
+}
+
+
+/* ============================================================
+AUTOMATIC DYNAMIC BACKGROUND — SWITCH EVERY 2 SECONDS
+============================================================ */
+
+body.theme-1 { background: radial-gradient(circle, #e7e7ff, #e0f3ff); }
+body.theme-2 { background: radial-gradient(circle, #f8e7ff, #e7faff); }
+body.theme-3 { background: radial-gradient(circle, #ffe7e7, #fff2e7); }
+body.theme-4 { background: radial-gradient(circle, #e7fff4, #e7f5ff); }
+
+@keyframes themeCycle {
+  0%   { background: var(--light); }
+  25%  { background: var(--theme2); }
+  50%  { background: var(--theme3); }
+  75%  { background: var(--theme4); }
+  100% { background: var(--theme1); }
 }
