@@ -368,10 +368,11 @@ animation: loaderAnim 1.4s infinite ease-in-out;
 FLOATING ANIMATION — AI MESSAGE WHILE TYPING
 ============================================================ */
 .float-typing {
-animation: floatTyping 2.2s ease-in-out infinite;
+  animation: floatTyping 2.2s ease-in-out infinite;
 }
 
 @keyframes floatTyping {
-0% { transform: translateY(0); }
-50% { transform: translateY(-8px); }
-100% { transform: translateY(0); }
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+  100% { transform: translateY(0); }
+}
