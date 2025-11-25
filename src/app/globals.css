@@ -3,272 +3,186 @@
 @tailwind utilities;
 
 /* ============================================================
-   ROOT COLORS + BRAND VARIABLES — ULTRA PREMIUM
+   ROOT VARIABLES — Apple Vision Pro Color System
 ============================================================ */
 :root {
   --primary: #4f46e5;
   --secondary: #06b6d4;
   --accent: #8b5cf6;
 
-  --dark: #0f172a;
-  --light: #f8fafc;
+  --bg-light-1: #eef3ff;
+  --bg-light-2: #e7fbff;
 
-  --glass-bg: rgba(255,255,255,0.20);
-  --glass-border: rgba(255,255,255,0.28);
+  --dark-1: #0f0f16;
+  --dark-2: #090b10;
 
-  --shadow: 0px 12px 40px rgba(0,0,0,0.12);
-  --glow: 0 0 22px rgba(79,70,229,0.45);
+  --glass-bg: rgba(255,255,255,0.25);
+  --glass-border: rgba(255,255,255,0.32);
 
-  --transition: 0.28s cubic-bezier(0.4,0.0,0.2,1);
+  --shadow-3d: 0 18px 45px rgba(0,0,0,0.14);
+
+  --transition: 0.28s cubic-bezier(0.4,0,0.2,1);
 }
 
 /* ============================================================
-   GLOBAL BACKGROUND — PARALLAX + LUXURY GRADIENT
+   APPLE VISION PRO BACKGROUND — MULTI-LAYER, 10s TRANSITIONS
 ============================================================ */
 body {
-  background: radial-gradient(circle at 20% 30%, #e7e7ff, #e7fbff 50%, #eef3ff);
-  color: var(--dark);
+  background: radial-gradient(circle at 20% 30%, var(--bg-light-1), var(--bg-light-2));
+  color: #111;
   overflow-x: hidden;
   font-smooth: always;
   -webkit-font-smoothing: antialiased;
+  transition: background 1s ease;
 }
 
 .dark body {
-  background: radial-gradient(circle at 20% 30%, #0f0f16, #0c0f14 50%, #090b10);
+  background: radial-gradient(circle at 20% 30%, var(--dark-1), var(--dark-2));
   color: white;
 }
 
-/* Subtle floating motion */
-body::before {
+/* Dynamic Background Wave Layers */
+body::before,
+body::after {
   content: "";
   position: fixed;
-  top: -20%;
-  left: -20%;
-  width: 140%;
-  height: 140%;
-  background: radial-gradient(circle at 30% 20%, #4f46e540, transparent 70%),
-              radial-gradient(circle at 80% 70%, #06b6d440, transparent 70%);
-  z-index: -1;
-  filter: blur(60px);
-  animation: bgFloat 18s ease-in-out infinite alternate;
+  top: -30%;
+  left: -30%;
+  width: 160%;
+  height: 160%;
+  z-index: -2;
+  filter: blur(80px);
+  animation: waveShift 18s ease-in-out infinite alternate;
 }
 
-@keyframes bgFloat {
-  from { transform: translate3d(-20px,-20px,0); }
-  to   { transform: translate3d(20px,20px,0); }
+body::before {
+  background: radial-gradient(circle at 30% 20%, #4f46e540, transparent 70%);
+}
+body::after {
+  background: radial-gradient(circle at 80% 70%, #06b6d440, transparent 70%);
+  animation-delay: 5s;
+}
+
+@keyframes waveShift {
+  0%   { transform: translate3d(-40px, -20px, 0); }
+  50%  { transform: translate3d(40px, 30px, 0); }
+  100% { transform: translate3d(-20px, -10px, 0); }
+}
+
+/* Automatic Background Change Every 10s */
+@keyframes bgChange {
+  0%   { opacity: 1; }
+  25%  { opacity: 0.9; }
+  50%  { opacity: 1; }
+  75%  { opacity: 0.95; }
+  100% { opacity: 1; }
+}
+body {
+  animation: bgChange 10s ease-in-out infinite;
 }
 
 /* ============================================================
-   GLASS NAVIGATION BAR
+   3D SCROLL EFFECT — Parallax Depth
+============================================================ */
+html {
+  scroll-behavior: smooth;
+}
+
+.parallax {
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* ============================================================
+   LUXURY GLASS NAVBAR — Vision Pro
 ============================================================ */
 .nav-glass {
   position: fixed;
-  top: 0; left: 0;
+  top: 0;
+  left: 0;
   width: 100%;
-  height: 68px;
+  height: 70px;
   background: var(--glass-bg);
+  backdrop-filter: blur(24px);
   border-bottom: 1px solid var(--glass-border);
-  backdrop-filter: blur(22px);
   display: flex;
   align-items: center;
   padding: 0 28px;
-  z-index: 90;
-  animation: fadeDown 0.6s ease;
+  z-index: 100;
+  box-shadow: 0 6px 25px rgba(0,0,0,0.08);
+  animation: fadeDown 0.7s ease-out;
 }
 
 @keyframes fadeDown {
-  from { opacity: 0; transform: translateY(-12px); }
-  to   { opacity: 1; transform: translateY(0); }
+  0% { opacity: 0; transform: translateY(-20px); }
+  100% { opacity: 1; transform: translateY(0); }
 }
 
 /* ============================================================
-   LOGO GLOW ANIMATION
-============================================================ */
-.logo-glow {
-  animation: logoPulse 3.2s ease-in-out infinite;
-  filter: drop-shadow(0 0 14px rgba(79,70,229,0.6));
-}
-
-@keyframes logoPulse {
-  0%   { transform: scale(1);   filter: drop-shadow(0 0 8px rgba(79,70,229,0.4)); }
-  50%  { transform: scale(1.10); filter: drop-shadow(0 0 22px rgba(79,70,229,0.8)); }
-  100% { transform: scale(1);   filter: drop-shadow(0 0 8px rgba(79,70,229,0.4)); }
-}
-
-/* ============================================================
-   DAHDOUH AI — SPINNING CIRCLE AROUND LOGO
+   PREMIUM LOGO — Glow + Orbit Ring Animation (Apple Level)
 ============================================================ */
 .dahdouh-logo-wrapper {
   position: relative;
-  width: 48px;
-  height: 48px;
+  width: 52px;
+  height: 52px;
 }
 
 .dahdouh-logo {
-  width: 48px;
-  height: 48px;
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
   position: relative;
-  z-index: 2;
+  z-index: 3;
+  animation: logoPulse 3.6s ease-in-out infinite;
+  filter: drop-shadow(0 0 18px rgba(79,70,229,0.5));
 }
 
-/* Circle loader */
+@keyframes logoPulse {
+  0%   { transform: scale(1);   filter: drop-shadow(0 0 12px rgba(79,70,229,0.4)); }
+  50%  { transform: scale(1.12); filter: drop-shadow(0 0 26px rgba(79,70,229,0.85)); }
+  100% { transform: scale(1);   filter: drop-shadow(0 0 12px rgba(79,70,229,0.4)); }
+}
+
+/* Orbit ring */
 .dahdouh-spin-circle {
   position: absolute;
-  top: -6px;
-  left: -6px;
-  width: 60px;
-  height: 60px;
+  top: -10px;
+  left: -10px;
+  width: 72px;
+  height: 72px;
   border-radius: 50%;
   border-top: 3px solid var(--primary);
   border-right: 3px solid transparent;
   border-left: 3px solid transparent;
   border-bottom: 3px solid transparent;
-  animation: spinCircle 1s linear infinite;
-  filter: drop-shadow(0 0 8px rgba(79,70,229,0.6));
+  animation: orbit 1.4s linear infinite;
+  opacity: 0.8;
+  z-index: 1;
 }
 
-@keyframes spinCircle {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
+@keyframes orbit {
+  0%   { transform: rotate(0deg) scale(1); }
+  100% { transform: rotate(360deg) scale(1); }
 }
 
 /* ============================================================
-   FLOATING MODEL SELECTOR — Apple Glass Tabs
+   CHAT BUBBLE FLOAT ANIMATION (When AI is typing)
 ============================================================ */
-.model-select-row {
-  display: flex;
-  gap: 12px;
-  padding: 8px 0;
-  overflow-x: auto;
-  scrollbar-width: none;
+.float-typing {
+  animation: floatSoft 2.2s ease-in-out infinite;
 }
 
-.model-btn {
-  padding: 10px 18px;
-  border-radius: 16px;
-  border: 1px solid rgba(230,230,230,0.7);
-  background: rgba(255,255,255,0.5);
-  backdrop-filter: blur(14px);
-  font-size: 0.95rem;
-  font-weight: 500;
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  transition: var(--transition);
-}
-
-.model-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow);
-}
-
-.model-btn.active {
-  transform: scale(1.09);
-  color: white;
-  border: none;
-  background-size: 200% 200%;
-  animation: popIn 0.25s ease;
-}
-
-@keyframes popIn {
-  from { transform: scale(0.85); opacity: 0; }
-  to   { transform: scale(1.09); opacity: 1; }
-}
-
-/* Gradient versions */
-.model-btn.dahdouh-ai.active {
-  background: linear-gradient(90deg, #4f46e5, #06b6d4);
-}
-.model-btn.dahdouh-math.active {
-  background: linear-gradient(90deg, #2563eb, #3b82f6);
-}
-.model-btn.dahdouh-search.active {
-  background: linear-gradient(90deg, #fbbf24, #f59e0b);
-}
-.model-btn.dahdouh-agent.active {
-  background: linear-gradient(90deg, #16a34a, #22c55e);
-}
-.model-btn.dahdouh-vision.active {
-  background: linear-gradient(90deg, #8b5cf6, #06b6d4);
+@keyframes floatSoft {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+  100% { transform: translateY(0); }
 }
 
 /* ============================================================
-   CHAT BUBBLES (user, ai, agent, math)
-============================================================ */
-.user-bubble,
-.default-style,
-.math-style,
-.agent-style,
-.search-box,
-.vision-box {
-  animation: bubblePop 0.25s ease;
-}
-
-@keyframes bubblePop {
-  from { transform: scale(0.88); opacity: 0; }
-  to   { transform: scale(1); opacity: 1; }
-}
-
-/* User bubble */
-.user-bubble {
-  background: var(--primary);
-  padding: 14px 18px;
-  color: white;
-  border-radius: 18px;
-  max-width: 80%;
-  box-shadow: var(--shadow);
-}
-
-/* AI default bubble */
-.default-style {
-  background: white;
-  padding: 18px;
-  border-radius: 18px;
-  border: 1px solid #e2e2e2;
-  box-shadow: var(--shadow);
-}
-
-/* Math */
-.math-style {
-  background: #eef3ff;
-  border-left: 6px solid var(--primary);
-  padding: 18px;
-  border-radius: 16px;
-}
-
-/* Agent */
-.agent-style {
-  background: #0d1117;
-  color: #cbd5e1;
-  padding: 18px;
-  border-radius: 16px;
-  border: 1px solid #30363d;
-  font-family: "JetBrains Mono", monospace;
-}
-
-/* Search */
-.search-box {
-  padding: 18px;
-  border-radius: 16px;
-  background: white;
-  border: 1px solid #e4e4e7;
-  box-shadow: var(--shadow);
-}
-
-/* Vision */
-.vision-box {
-  padding: 18px;
-  border-radius: 16px;
-  background: white;
-  box-shadow: var(--shadow);
-}
-
-/* ============================================================
-   PREMIUM CHAT INPUT BOX — GPT/Claude Style
+   PREMIUM CHAT INPUT (GPT + Claude Hybrid)
 ============================================================ */
 .da-chatbox {
-  background: rgba(255,255,255,0.9);
+  background: rgba(255,255,255,0.92);
   backdrop-filter: blur(16px);
   border-radius: 22px;
   border: 1px solid rgba(220,220,220,0.6);
@@ -276,54 +190,53 @@ body::before {
   display: flex;
   align-items: flex-end;
   gap: 14px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.04);
+  box-shadow: 0 10px 28px rgba(0,0,0,0.05);
   transition: var(--transition);
-  min-height: 70px;
+  min-height: 78px;
 }
 
 .da-chatbox:focus-within {
   border-color: var(--primary);
-  box-shadow: 0 0 0 4px rgba(79,70,229,0.18);
+  box-shadow: 0 0 0 5px rgba(79,70,229,0.25);
 }
 
-/* Textarea */
+/* Text area */
 .da-textarea {
   flex: 1;
   background: transparent;
-  font-size: 1.18rem;
-  line-height: 1.5;
+  font-size: 1.2rem;
   padding: 8px 0;
-  max-height: 250px;
+  max-height: 260px;
   overflow-y: auto;
+  line-height: 1.55;
   resize: none;
   outline: none;
 }
 
 .da-textarea::placeholder {
-  color: rgba(100,100,100,0.5);
+  color: rgba(100,100,100,0.45);
 }
 
-/* Attach */
+/* Attach button */
 .da-attach-btn {
-  width: 44px;
-  height: 44px;
-  border-radius: 16px;
+  width: 46px;
+  height: 46px;
   background: #f0f2f6;
+  border-radius: 16px;
+  font-size: 22px;
   display: grid;
   place-content: center;
-  font-size: 22px;
-  cursor: pointer;
   transition: var(--transition);
 }
 
 .da-attach-btn:hover {
-  background: #e6e8ef;
+  background: #e1e4ea;
 }
 
-/* Send */
+/* Send button */
 .da-send-btn {
-  width: 50px;
-  height: 50px;
+  width: 52px;
+  height: 52px;
   background: var(--primary);
   color: white;
   border-radius: 50%;
@@ -335,44 +248,50 @@ body::before {
 }
 
 .da-send-btn:hover {
-  background: #3c37d5;
-  box-shadow: 0 0 12px rgba(79,70,229,0.5);
+  background: #3d38d5;
+  box-shadow: 0 0 16px rgba(79,70,229,0.55);
 }
 
 /* ============================================================
-   AI TYPING INDICATOR — FLUID DOTS
+   AI Typing Indicator — 3D Liquid Dots
 ============================================================ */
-.dahdouh-loader {
+.typing-dots {
   display: flex;
   gap: 6px;
+  padding: 6px;
 }
 
-.dahdouh-loader div {
+.typing-dots div {
   width: 10px;
   height: 10px;
-  border-radius: 50%;
   background: var(--primary);
-  animation: loaderAnim 1.4s infinite ease-in-out;
+  border-radius: 50%;
+  animation: dotBounce 1.4s infinite ease-in-out;
+  filter: drop-shadow(0 0 6px rgba(79,70,229,0.8));
 }
 
-.dahdouh-loader div:nth-child(2) { animation-delay: 0.2s; }
-.dahdouh-loader div:nth-child(3) { animation-delay: 0.4s; }
+.typing-dots div:nth-child(2) { animation-delay: 0.2s; }
+.typing-dots div:nth-child(3) { animation-delay: 0.4s; }
 
-@keyframes loaderAnim {
-  0% { opacity: .3; transform: translateY(0); }
-  50% { opacity: 1; transform: translateY(-8px); }
-  100% { opacity: .3; transform: translateY(0); }
+@keyframes dotBounce {
+  0% { transform: translateY(0); opacity: .4; }
+  50% { transform: translateY(-10px); opacity: 1; }
+  100% { transform: translateY(0); opacity: .4; }
 }
 
 /* ============================================================
-   FLOATING ANIMATION — AI MESSAGE WHILE TYPING
+   BUBBLE POP ANIMATION (User + AI)
 ============================================================ */
-.float-typing {
-  animation: floatTyping 2.2s ease-in-out infinite;
+.user-bubble,
+.default-style,
+.math-style,
+.agent-style,
+.search-box,
+.vision-box {
+  animation: bubblePop 0.28s ease-out;
 }
 
-@keyframes floatTyping {
-  0% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
-  100% { transform: translateY(0); }
+@keyframes bubblePop {
+  0% { opacity: 0; transform: scale(0.85) translateY(6px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
 }
