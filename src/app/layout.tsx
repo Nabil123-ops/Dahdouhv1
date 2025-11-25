@@ -2,10 +2,21 @@ import type { Metadata, Viewport } from "next";
 import { Outfit } from "next/font/google";
 import "./globals.css";
 import { ThemeProviders } from "@/utils/theme-providers";
+import ThemeCycle from "./theme-cycle"; // ⭐ NEW - Auto background animation
 
 const OutfitFont = Outfit({
   subsets: ["latin"],
-  weight: ["100","200","300","400","500","600","700","800","900"],
+  weight: [
+    "100",
+    "200",
+    "300",
+    "400",
+    "500",
+    "600",
+    "700",
+    "800",
+    "900",
+  ],
 });
 
 export const metadata: Metadata = {
@@ -54,9 +65,14 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
+  viewportFit: "cover",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en">
       <head>
@@ -70,8 +86,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
 
       <body
-        className={`${OutfitFont.className} dark:bg-[#131314] h-dvh w-full overflow-hidden bg-white text-black dark:text-white`}
+        className={`${OutfitFont.className} 
+          h-screen w-full 
+          overflow-hidden 
+          bg-white dark:bg-[#0d0d12] 
+          text-black dark:text-white 
+          antialiased
+          scroll-smooth`}
       >
+        {/* ⭐ VisionOS dynamic animated background */}
+        <ThemeCycle />
+
+        {/* ⭐ All providers + children */}
         <ThemeProviders>{children}</ThemeProviders>
       </body>
     </html>
