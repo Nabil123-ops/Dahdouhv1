@@ -53,13 +53,17 @@ export async function POST(req: Request) {
         { status: 500 }
       );
 
+    /* ============================================================
+       MODEL MAP (UNCHANGED)
+    ============================================================ */
     const MODEL_MAP = {
-  "dahdouh-ai": "llama-3.3-70b-versatile",
-  "dahdouh-math": "groq/compound-mini",
-  "dahdouh-search": "openai/gpt-oss-20b",
-  "dahdouh-agent": "meta-llama/llama-4-scout-17b-16e-instruct",
-  "dahdouh-vision": "meta-llama/llama-4-scout-17b-16e-instruct",
-};
+      "dahdouh-ai": "llama-3.3-70b-versatile",
+      "dahdouh-math": "groq/compound-mini",
+      "dahdouh-search": "openai/gpt-oss-20b",
+      "dahdouh-agent": "meta-llama/llama-4-scout-17b-16e-instruct",
+      "dahdouh-vision": "meta-llama/llama-4-scout-17b-16e-instruct",
+      "dahdouh-image": "luma/llama-3.2-vision-image-1b" // ⭐ ADDED IMAGE MODEL
+    };
 
     type ModelKey = keyof typeof MODEL_MAP;
     const selectedModel = MODEL_MAP[(model as ModelKey) || "dahdouh-ai"];
@@ -172,14 +176,55 @@ ${prompt}
     }
 
     /* ============================================================
-       MATH MODEL (CLEAN - NO SYMBOLS)
+       IMAGE GENERATION MODEL (NEW)
+    ============================================================ */
+    if (model === "dahdouh-image") {
+      const res = await fetch(
+        "https://api.groq.com/openai/v1/chat/completions",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${GROQ_KEY}`,
+          },
+          body: JSON.stringify({
+            model: selectedModel,
+            response_format: { type: "json_object" },
+            messages: [
+              {
+                role: "user",
+                content: `Generate an image using this prompt: "${prompt}". Return ONLY Base64.`,
+              },
+            ],
+          }),
+        }
+      );
+
+      const data = await res.json();
+
+      let base64 = null;
+      try {
+        const parsed = JSON.parse(data?.choices?.[0]?.message?.content);
+        base64 = parsed?.image_base64 || null;
+      } catch {
+        base64 = null;
+      }
+
+      return NextResponse.json({
+        image: base64,
+        reply: base64 ? "Image generated." : "Failed to generate image.",
+      });
+    }
+
+    /* ============================================================
+       MATH MODEL (NO LaTeX)
     ============================================================ */
     let finalPrompt = prompt;
 
     if (model === "dahdouh-math") {
       finalPrompt = `
 Explain this math problem step-by-step using simple text.
-Do NOT use LaTeX or symbols. Write normally, like a teacher explaining clearly.
+Do NOT use LaTeX or symbols. Write normally like a teacher.
 
 ${prompt}
 `;
