@@ -27,7 +27,11 @@ const MODELS = [
   { label: "Search", id: "dahdouh-search", icon: <FaSearch /> },
   { label: "Agent", id: "dahdouh-agent", icon: <FaRobot /> },
   { label: "Vision", id: "dahdouh-vision", icon: <MdImageSearch /> },
+
+  // ⭐ NEW — Image Generator
+  { label: "Image", id: "dahdouh-image", icon: <MdImageSearch /> },
 ];
+// ------------------------------------------------------
 
 const InputPrompt = ({ user }: { user?: User }) => {
   const router = useRouter();
@@ -105,13 +109,13 @@ const InputPrompt = ({ user }: { user?: User }) => {
 
       // 🔵 Optimistic AI reply
       setOptimisticResponse(
-  typeof reply === "string" ? reply : JSON.stringify(reply)
-);
+        typeof reply === "string" ? reply : JSON.stringify(reply)
+      );
 
-      // 🔵 FIX: Store real AI reply into Zustand to prevent message disappearing
+      // 🔵 Store REAL AI reply so message stays
       setCurrChat("llmResponse", reply);
 
-      /* SAVE TO MONGODB */
+      /* SAVE TO DB */
       await createChat({
         chatID,
         userID: user.id as string,
@@ -120,7 +124,7 @@ const InputPrompt = ({ user }: { user?: User }) => {
         llmResponse: reply,
       });
 
-      /* RESET UI */
+      /* RESET */
       setMsgLoader(false);
       setInputImg(null);
       setInputImgName(null);
@@ -148,8 +152,6 @@ const InputPrompt = ({ user }: { user?: User }) => {
     if (!e.target.files?.length) return;
     const file = e.target.files[0];
     setInputImg(file);
-
-    // 🔵 FIX: Sync to Zustand so optimistic UI receives correct imgName
     setInputImgName(file.name);
   };
 
