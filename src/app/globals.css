@@ -264,6 +264,32 @@ background: white;
 box-shadow: var(--shadow);
 }
 
+/* Image Generator */
+.image-box {
+  padding: 18px;
+  border-radius: 16px;
+  background: #ffffff;
+  border: 1px solid #e4e4e7;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.image-preview {
+  width: 100%;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid #e4e4e7;
+  background: #f8fafc;
+}
+
+.image-preview img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
 /* ============================================================
 PREMIUM CHAT INPUT BOX — GPT/Claude Style
 ============================================================ */
