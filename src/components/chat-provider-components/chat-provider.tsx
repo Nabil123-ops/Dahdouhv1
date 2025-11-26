@@ -19,6 +19,7 @@ const detectModelUI = (model: string) => {
   if (model === "dahdouh-agent") return "agent";
   if (model === "dahdouh-math") return "math";
   if (model === "dahdouh-vision") return "vision";
+  if (model === "dahdouh-image") return "image"; // ⭐ Added image model
   return "default";
 };
 
@@ -76,6 +77,31 @@ const VisionCard = ({
       >
         {response}
       </ReactMarkdown>
+    </div>
+  );
+};
+
+/* ============================================================
+   IMAGE GENERATION UI ⭐ NEW
+============================================================ */
+const ImageCard = ({ base64 }: { base64: string }) => {
+  return (
+    <div className="image-box fade-in-element">
+      <p className="font-semibold text-lg mb-3">Generated Image</p>
+
+      <img
+        src={`data:image/png;base64,${base64}`}
+        alt="Generated"
+        className="rounded-xl shadow-lg w-full max-w-md"
+      />
+
+      <a
+        href={`data:image/png;base64,${base64}`}
+        download="dahdouh-image.png"
+        className="mt-4 inline-block px-4 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700"
+      >
+        Download Image
+      </a>
     </div>
   );
 };
@@ -155,22 +181,29 @@ const ChatProvider = ({
             <VisionCard response={llmResponse} imgSrc={imgInfo.imgSrc} />
           )}
 
-          {/* DEFAULT / MATH / AGENT */}
-          {modelUI !== "search" && modelUI !== "vision" && (
-            <ReactMarkdown
-              className={`ai-bubble ${
-                modelUI === "math"
-                  ? "math-style"
-                  : modelUI === "agent"
-                  ? "agent-style"
-                  : "default-style"
-              }`}
-              remarkPlugins={[remarkMath]}
-              rehypePlugins={[rehypeKatex]}
-            >
-              {llmResponse}
-            </ReactMarkdown>
+          {/* IMAGE MODEL ⭐ NEW */}
+          {modelUI === "image" && (
+            <ImageCard base64={llmResponse} />
           )}
+
+          {/* DEFAULT / MATH / AGENT */}
+          {modelUI !== "search" &&
+            modelUI !== "vision" &&
+            modelUI !== "image" && (
+              <ReactMarkdown
+                className={`ai-bubble ${
+                  modelUI === "math"
+                    ? "math-style"
+                    : modelUI === "agent"
+                    ? "agent-style"
+                    : "default-style"
+                }`}
+                remarkPlugins={[remarkMath]}
+                rehypePlugins={[rehypeKatex]}
+              >
+                {llmResponse}
+              </ReactMarkdown>
+            )}
         </root.div>
       </div>
 
