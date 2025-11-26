@@ -1,8 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import { Outfit } from "next/font/google";
 import "./globals.css";
+
 import { ThemeProviders } from "@/utils/theme-providers";
-import ThemeCycle from "./theme-cycle"; // ⭐ NEW - Auto background animation
+import DahdouhUIEffects from "@/utils/ui-effects"; // ⭐ NEW - Parallax + 3D UI
 
 const OutfitFont = Outfit({
   subsets: ["latin"],
@@ -86,18 +87,28 @@ export default function RootLayout({
       </head>
 
       <body
-        className={`${OutfitFont.className} 
-          h-screen w-full 
-          overflow-hidden 
-          bg-white dark:bg-[#0d0d12] 
-          text-black dark:text-white 
-          antialiased
-          scroll-smooth`}
+        className={`${OutfitFont.className}
+          min-h-screen w-full
+          bg-white dark:bg-[#0d0d12]
+          text-black dark:text-white
+          antialiased scroll-smooth
+        `}
       >
-        {/* ⭐ VisionOS dynamic animated background */}
-        <ThemeCycle />
+        {/* ============================================================
+            ⭐ Dahdouh AI Ultra UI Effects (parallax, 3D tilt, theme cycle)
+           ============================================================ */}
+        <DahdouhUIEffects />
 
-        {/* ⭐ All providers + children */}
+        {/* ============================================================
+            ⭐ Parallax background layers (3 layers)
+           ============================================================ */}
+        <div className="parallax-layer parallax-1"></div>
+        <div className="parallax-layer parallax-2"></div>
+        <div className="parallax-layer parallax-3"></div>
+
+        {/* ============================================================
+            ⭐ App Providers + Children
+           ============================================================ */}
         <ThemeProviders>{children}</ThemeProviders>
       </body>
     </html>
