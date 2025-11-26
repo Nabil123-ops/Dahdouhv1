@@ -1,233 +1,113 @@
-Why you changed the model name dont change them let them like this
-
 "use client";
 
-import React, { useCallback, useRef, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { nanoid } from "nanoid";
-import { User } from "next-auth";
+import React from "react";
+import DevButton from "../dev-components/dev-button";
 
-// Zustand
 import geminiZustand from "@/utils/gemini-zustand";
+import { GoSquareFill } from "react-icons/go";
+import SpeechToText from "../chat-provider-components/speech-to-text";
+import { RiImageAddFill } from "react-icons/ri";
+import { SlCamera } from "react-icons/sl";
+import ReactTooltip from "../dev-components/react-tooltip";
 
-// Actions
-import { createChat } from "@/actions/actions";
+const InputActions = ({
+  generateMsg,
+  handleCancel,
+  handleImageUpload,
+}: {
+  generateMsg: () => void;
+  handleCancel: () => void;
+  handleImageUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}) => {
+  const { currChat, msgLoader } = geminiZustand();
 
-// Icons
-import { MdImageSearch } from "react-icons/md";
-import { IoMdClose } from "react-icons/io";
+  return (
+    <div className="flex justify-end items-center gap-2">
+      
+      {/* STOP RESPONSE BUTTON */}
+      {currChat.userPrompt && msgLoader ? (
+        <ReactTooltip tipData="Stop response">
+          <DevButton
+            onClick={handleCancel}
+            className="!bg-accentBlue/50 p-3"
+            rounded="full"
+            asIcon
+          >
+            <GoSquareFill className="text-xl text-black dark:text-white" />
+          </DevButton>
+        </ReactTooltip>
+      ) : (
+        <>
+          {/* UPLOAD IMAGE */}
+          <ReactTooltip tipData="Upload image">
+            <DevButton
+              className="p-3 relative"
+              rounded="full"
+              variant="v3"
+              asIcon
+            >
+              <input
+                type="file"
+                className="absolute inset-0 z-10 opacity-0 cursor-pointer"
+                onChange={handleImageUpload}
+                accept="image/*"
+              />
+              <RiImageAddFill className="text-2xl text-black dark:text-white" />
+            </DevButton>
+          </ReactTooltip>
 
-// Model icons
-import { FaBrain, FaCalculator, FaSearch, FaRobot } from "react-icons/fa";
+          {/* CAMERA CAPTURE (MOBILE ONLY) */}
+          <ReactTooltip tipData="Capture photo">
+            <DevButton
+              className="p-3 relative md:!hidden !flex"
+              rounded="full"
+              variant="v3"
+              asIcon
+            >
+              <input
+                type="file"
+                capture="environment"
+                accept="image/*"
+                className="absolute inset-0 z-10 opacity-0 cursor-pointer"
+                onChange={handleImageUpload}
+              />
+              <SlCamera className="text-2xl text-black dark:text-white" />
+            </DevButton>
+          </ReactTooltip>
 
-/* ======================================================
-Dahdouh AI MODELS
-====================================================== */
-const MODELS = [
-  { label: "Dahdouh AI", id: "dahdouh-ai", icon: <FaBrain /> },
-  { label: "Math", id: "dahdouh-math", icon: <FaCalculator /> },
-  { label: "Search", id: "dahdouh-search", icon: <FaSearch /> },
-  { label: "Agent", id: "dahdouh-agent", icon: <FaRobot /> },
-  { label: "Vision", id: "dahdouh-vision", icon: <MdImageSearch /> },
+          {/* SPEECH TO TEXT */}
+          <SpeechToText />
 
-  // ⭐ ADD THIS — DO NOT CHANGE ANY OTHER MODEL
-  { label: "Image", id: "dahdouh-image", icon: <MdImageSearch /> },
-];
-
-const InputPrompt = ({ user }: { user?: User }) => {
-const router = useRouter();
-const { chat } = useParams();
-const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-const {
-currChat,
-inputImgName,
-setInputImgName,
-setCurrChat,
-setToast,
-setMsgLoader,
-setOptimisticResponse,
-setOptimisticPrompt,
-chosenModel,
-setChosenModel,
-} = geminiZustand();
-
-const [inputImg, setInputImg] = useState<File | null>(null);
-
-/* ======================================================
-SEND MESSAGE
-====================================================== */
-const generateMsg = useCallback(async () => {
-const prompt = currChat.userPrompt?.trim();
-if (!prompt) return;
-
-if (!user) {
-setToast("Please sign in to use Dahdouh AI.");
-return;
-}
-
-try {
-setMsgLoader(true);
-
-// Chat ID for this session
-const chatID = (chat as string) || nanoid();
-router.push(/app/${chatID});
-
-// 🔵 Optimistic user prompt
-setOptimisticPrompt(prompt);
-
-/* IMAGE → BASE64 */
-let imgBase64 = null;
-if (inputImg) {
-const buffer = await inputImg.arrayBuffer();
-imgBase64 = data:${inputImg.type};base64,${Buffer.from(buffer).toString(     "base64"     )};
-}
-
-/* SEND TO AI */
-const res = await fetch("/api/groq", {
-method: "POST",
-headers: { "Content-Type": "application/json" },
-body: JSON.stringify({
-prompt,
-model: chosenModel,
-imgBase64,
-}),
-});
-
-const data = await res.json();
-
-// AI Response
-const rawReply =
-data?.reply ||
-data?.error ||
-data?.results ||
-"⚠ No response from AI.";
-
-const reply =
-typeof rawReply === "string" ? rawReply : JSON.stringify(rawReply);
-
-// 🔵 Optimistic AI reply
-setOptimisticResponse(
-
-typeof reply === "string" ? reply : JSON.stringify(reply)
-);
-
-// 🔵 FIX: Store real AI reply into Zustand to prevent message disappearing
-setCurrChat("llmResponse", reply);
-
-/* SAVE TO MONGODB */
-await createChat({
-chatID,
-userID: user.id as string,
-imgName: inputImgName ?? undefined,
-userPrompt: prompt,
-llmResponse: reply,
-});
-
-/* RESET UI */
-setMsgLoader(false);
-setInputImg(null);
-setInputImgName(null);
-
-setTimeout(() => setCurrChat("userPrompt", ""), 150);
-} catch (err) {
-console.error("AI Error:", err);
-setMsgLoader(false);
-setOptimisticResponse("❌ AI Request Failed.");
-}
-
-}, [
-currChat.userPrompt,
-user,
-chat,
-chosenModel,
-inputImg,
-inputImgName,
-setCurrChat,
-]);
-
-/* ======================================================
-IMAGE UPLOAD
-====================================================== */
-const handleImageUpload = (e: any) => {
-if (!e.target.files?.length) return;
-const file = e.target.files[0];
-setInputImg(file);
-
-// 🔵 FIX: Sync to Zustand so optimistic UI receives correct imgName
-setInputImgName(file.name);
-
+          {/* SUBMIT MESSAGE */}
+          <ReactTooltip tipData="Submit">
+            <DevButton
+              asIcon
+              onClick={generateMsg}
+              type="submit"
+              rounded="full"
+              variant="v3"
+              className={`overflow-hidden transform origin-right p-2 ${
+                currChat.userPrompt && !msgLoader
+                  ? "*:w-8 *:scale-100 pointer-events-auto ml-2"
+                  : "*:w-0 *:scale-0 pointer-events-none"
+              }`}
+            >
+              <svg
+                className="overflow-hidden transition-all transform"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  fill="currentColor"
+                  d="M3 20V4l19 8zm2-3l11.85-5L5 7v3.5l6 1.5-6 1.5zm0 0V7z"
+                ></path>
+              </svg>
+            </DevButton>
+          </ReactTooltip>
+        </>
+      )}
+    </div>
+  );
 };
 
-/* ======================================================
-ENTER TO SEND
-====================================================== */
-const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-if (e.key === "Enter" && !e.shiftKey) {
-e.preventDefault();
-generateMsg();
-}
-};
-
-/* ======================================================
-MODEL SELECTOR
-====================================================== */
-const ModelSelector = () => (
-
-<div className="flex gap-2 overflow-x-auto py-2 mb-3 model-select-row">  
-{MODELS.map((m) => (  
-<button  
-key={m.id}  
-onClick={() => setChosenModel(m.id)}  
-className={model-btn flex items-center gap-2 ${   chosenModel === m.id ? "active" : ""   } ${m.id}}  
->  
-{m.icon}  
-{m.label}  
-</button>  
-))}  
-</div>  
-);  return (
-
-<div className="w-full max-w-3xl mx-auto px-4 pb-6">  
-<ModelSelector />  {/* Uploaded Image Preview */}
-{inputImg && (
-<div className="da-image-preview">
-<MdImageSearch className="text-3xl" />
-<p className="text-sm font-semibold truncate">{inputImgName}</p>
-
-<IoMdClose    
-    className="da-image-close text-red-400 hover:text-red-600"    
-    onClick={() => {    
-      setInputImg(null);    
-      setInputImgName(null);    
-    }}    
-  />    
-</div>
-
-)}
-
-{/* Chatbox */}
-
-  <div className="da-chatbox">    
-    <label className="da-attach-btn cursor-pointer">    
-      +    
-      <input type="file" onChange={handleImageUpload} className="hidden" />    
-    </label>    <textarea    
-  ref={textareaRef}    
-  placeholder="Ask Dahdouh AI anything…"    
-  value={currChat.userPrompt || ""}    
-  onChange={(e) => setCurrChat("userPrompt", e.target.value)}    
-  onKeyDown={handleKeyDown}    
-  rows={1}    
-  className="da-textarea"    
-/>    
-
-<button onClick={generateMsg} className="da-send-btn">    
-  ➤    
-</button>
-
-  </div>    
-</div>  );
-};
-
-export default InputPrompt;
+export default InputActions;
