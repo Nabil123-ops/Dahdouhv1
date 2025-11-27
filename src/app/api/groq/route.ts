@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import User from "@/models/user-model";   // ✅ Make sure this path matches
+import dbConnect from "@/utils/db"; // ✅ your DB connector
 
 interface SearchResult {
   title: string;
@@ -7,7 +9,7 @@ interface SearchResult {
 }
 
 /* ============================================================
-   GOOGLE SEARCH FUNCTION — FIXED
+   GOOGLE SEARCH FUNCTION
 ============================================================ */
 async function runGoogleSearch(query: string): Promise<SearchResult[]> {
   const apiKey = process.env.GOOGLE_API_KEY;
@@ -21,9 +23,10 @@ async function runGoogleSearch(query: string): Promise<SearchResult[]> {
 
   try {
     const res = await fetch(url);
-    const json = await res.json();
+    if (!res.ok) return [];
 
-    if (json.error || !json.items) return [];
+    const json = await res.json();
+    if (!json.items) return [];
 
     return json.items.map((item: any) => ({
       title: item.title,
@@ -36,14 +39,81 @@ async function runGoogleSearch(query: string): Promise<SearchResult[]> {
 }
 
 /* ============================================================
-   MAIN POST HANDLER — FIXED
+   MAIN POST HANDLER — WITH SUBSCRIPTION CHECKS
 ============================================================ */
 export async function POST(req: Request) {
   try {
-    const { prompt, model, imgBase64 } = await req.json();
+    await dbConnect();
+
+    const body = await req.json();
+    const { prompt, model, imgBase64, email } = body;
 
     if (!prompt && !imgBase64) {
-      return NextResponse.json({ error: "Missing prompt" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing prompt" },
+        { status: 400 }
+      );
+    }
+
+    /* ============================================================
+       FETCH USER + CHECK EXPIRATION
+    ============================================================ */
+    let user = null;
+
+    if (email) {
+      user = await User.findOne({ email });
+
+      // Auto-downgrade expired subscriptions
+      if (user?.expires && new Date(user.expires) < new Date()) {
+        user.plan = "free";
+        await user.save();
+      }
+    }
+
+    const plan = user?.plan || "free";
+
+    /* ============================================================
+       SUBSCRIPTION RESTRICTION RULES
+    ============================================================ */
+
+    // ❌ Block Dahdouh Agent for free users
+    if (model === "dahdouh-agent" && plan === "free") {
+      return NextResponse.json(
+        { error: "Upgrade required to use Dahdouh Agent." },
+        { status: 403 }
+      );
+    }
+
+    // ❌ Block Vision Model for free
+    if (model === "dahdouh-vision" && plan === "free") {
+      return NextResponse.json(
+        { error: "Upgrade required to use Vision (image upload)." },
+        { status: 403 }
+      );
+    }
+
+    // ❌ Block HD Image Generator for free + advanced
+    if (model === "dahdouh-image" && plan !== "creator") {
+      return NextResponse.json(
+        { error: "Creator Plan required for HD image generation." },
+        { status: 403 }
+      );
+    }
+
+    // ❌ Block Video AI for free + advanced (when you add it later)
+    if (model === "dahdouh-video" && plan !== "creator") {
+      return NextResponse.json(
+        { error: "Creator Plan required for AI video generation." },
+        { status: 403 }
+      );
+    }
+
+    // ❌ Block search for free users (optional)
+    if (model === "dahdouh-search" && plan === "free") {
+      return NextResponse.json(
+        { error: "Upgrade required to use AI Search mode." },
+        { status: 403 }
+      );
     }
 
     const GROQ_KEY = process.env.GROQ_API_KEY;
@@ -66,8 +136,8 @@ export async function POST(req: Request) {
       "dahdouh-image": "luma/llama-3.2-vision-image-1b",
     };
 
-    type ModelKey = keyof typeof MODEL_MAP;
-    const selectedModel = MODEL_MAP[(model as ModelKey) || "dahdouh-ai"];
+    const selectedModel =
+      MODEL_MAP[(model as keyof typeof MODEL_MAP) || "dahdouh-ai"];
 
     /* ============================================================
        SEARCH MODEL
@@ -75,18 +145,18 @@ export async function POST(req: Request) {
     if (model === "dahdouh-search") {
       const results = await runGoogleSearch(prompt);
 
-      if (results.length === 0) {
+      if (!results.length) {
         return NextResponse.json({ reply: "No results found." });
       }
 
-      return NextResponse.json({
-        reply: results
-          .map(
-            (r, i) =>
-              `${i + 1}. **${r.title}**\n${r.snippet}\n${r.link}`
-          )
-          .join("\n\n"),
-      });
+      const formatted = results
+        .map(
+          (r, i) =>
+            `${i + 1}. **${r.title}**\n${r.snippet}\n${r.link}`
+        )
+        .join("\n\n");
+
+      return NextResponse.json({ reply: formatted });
     }
 
     /* ============================================================
@@ -95,13 +165,12 @@ export async function POST(req: Request) {
     if (model === "dahdouh-agent") {
       const searchResults = await runGoogleSearch(prompt);
 
-      const sources =
-        searchResults.length === 0
-          ? "No sources."
-          : searchResults
-              .slice(0, 5)
-              .map((s, i) => `(${i + 1}) ${s.title} — ${s.link}`)
-              .join("\n");
+      const sources = searchResults.length
+        ? searchResults
+            .slice(0, 5)
+            .map((s, i) => `(${i + 1}) ${s.title} — ${s.link}`)
+            .join("\n")
+        : "No sources.";
 
       const agentPrompt = `
 You are Dahdouh Agent.
@@ -130,10 +199,12 @@ ${prompt}
         }
       );
 
-      const data = await res.json();
+      const data = await res.json().catch(() => null);
 
       return NextResponse.json({
-        reply: data?.choices?.[0]?.message?.content || "No response.",
+        reply:
+          data?.choices?.[0]?.message?.content ||
+          "No response.",
         sources: searchResults,
       });
     }
@@ -171,10 +242,12 @@ ${prompt}
         }
       );
 
-      const data = await res.json();
+      const data = await res.json().catch(() => null);
 
       return NextResponse.json({
-        reply: data?.choices?.[0]?.message?.content || "No response.",
+        reply:
+          data?.choices?.[0]?.message?.content ||
+          "No response.",
       });
     }
 
@@ -203,12 +276,14 @@ ${prompt}
         }
       );
 
-      const data = await res.json();
+      const data = await res.json().catch(() => null);
 
       let base64 = null;
       try {
-        const parsed = JSON.parse(data?.choices?.[0]?.message?.content);
-        base64 = parsed?.image_base64 || null;
+        const parsed = JSON.parse(
+          data?.choices?.[0]?.message?.content || "{}"
+        );
+        base64 = parsed.image_base64 || null;
       } catch {
         base64 = null;
       }
@@ -252,18 +327,20 @@ ${prompt}
       }
     );
 
-    const data = await res.json();
+    const data = await res.json().catch(() => null);
 
     return NextResponse.json({
-      reply: data?.choices?.[0]?.message?.content || "No response.",
+      reply:
+        data?.choices?.[0]?.message?.content ||
+        "No response.",
     });
-  } catch (e) {
+  } catch (e: any) {
     console.error("API ERROR:", e);
 
     return NextResponse.json(
       {
         error: "Server error",
-        detail: String(e), // FIXED
+        detail: String(e),
       },
       { status: 500 }
     );
