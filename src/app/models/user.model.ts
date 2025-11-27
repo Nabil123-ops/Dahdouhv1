@@ -15,7 +15,9 @@ const userSchema = new Schema({
     required: [true, "Image is required"],
   },
 
-  // NEW FIELDS
+  //-------------------------
+  // SUBSCRIPTION FIELDS
+  //-------------------------
   plan: {
     type: String,
     default: "free", // free | advanced | creator
@@ -23,7 +25,35 @@ const userSchema = new Schema({
   expires: {
     type: Date,
     default: null,
-  }
+  },
+
+  //-------------------------
+  // USAGE LIMITS
+  //-------------------------
+
+  // Track messages per day
+  messagesUsedToday: {
+    type: Number,
+    default: 0,
+  },
+
+  // Last date messages were counted
+  messagesDate: {
+    type: String, // store: "2025-11-27"
+    default: "",
+  },
+
+  // Image generation usage (Creator plan)
+  imagesUsed: {
+    type: Number,
+    default: 0,
+  },
+
+  // Video generation (for future)
+  videosUsed: {
+    type: Number,
+    default: 0,
+  },
 });
 
 const User = models?.User || model("User", userSchema);
