@@ -1,24 +1,28 @@
 "use client";
 
-export const dynamic = "force-dynamic";
-export const fetchCache = "force-no-store";
-
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import { useState } from "react";
-import { useSession } from "next-auth/react"; // Assuming this path is correct
 
 export default function PricingPage() {
-  // Fix: Safe destructuring. While useSession() is expected to return an object 
-  // with a 'data' property, if the hook itself returns 'undefined' during 
-  // prerendering, this is the safest way to handle it.
-  // Although, often the error is a missing <SessionProvider /> wrapper higher up.
-  // We keep the standard destructuring, as the component *is* client-side.
-  const { data: session } = useSession(); 
+  const { data: session } = useSession();
   const [loadingPlan, setLoadingPlan] = useState("");
 
-  const handlePayment = async (plan: string) => {
-    // Crucial check: 'session' will be null or undefined if the user isn't signed in, 
-    // or if the component hasn't fully loaded the session data on the client.
+  // --------------------------------------
+  // DODO PAYMENT LINKS (FINAL + CORRECT)
+  // --------------------------------------
+  const DODO_PLANS: Record<string, string> = {
+    advanced:
+      "https://checkout.dodopayments.com/buy/pdt_nnNED1K9UDhBZ9H3abu9I?quantity=1000000&redirect_url=https://www.dahdouhai.live",
+
+    creator:
+      "https://checkout.dodopayments.com/buy/pdt_ihRKeEv7TrlZTsZaYxZHE?quantity=1000000&redirect_url=https://www.dahdouhai.live",
+  };
+
+  // --------------------------------------
+  // HANDLE PAYMENT (DIRECT REDIRECT)
+  // --------------------------------------
+  const handlePayment = (plan: string) => {
     if (!session?.user?.email) {
       alert("Please sign in first.");
       return;
@@ -26,32 +30,13 @@ export default function PricingPage() {
 
     setLoadingPlan(plan);
 
-    try {
-      const res = await fetch("/api/payments/create-invoice", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          plan,
-          email: session.user.email,
-        }),
-      });
-
-      const data = await res.json();
-      setLoadingPlan("");
-
-      if (data.invoice_url) {
-        window.location.href = data.invoice_url;
-      } else {
-        alert("Payment error.");
-        console.error(data);
-      }
-    } catch (e) {
-      setLoadingPlan("");
-      console.error(e);
-      alert("Something went wrong.");
-    }
+    // 🔥 NO API CALL – DIRECT REDIRECT
+    window.location.href = DODO_PLANS[plan];
   };
 
+  // --------------------------------------
+  // PLANS
+  // --------------------------------------
   const plans = [
     {
       name: "Free",
@@ -95,6 +80,9 @@ export default function PricingPage() {
     },
   ];
 
+  // --------------------------------------
+  // UI
+  // --------------------------------------
   return (
     <div className="w-full max-w-5xl mx-auto px-5 py-20">
       <h1 className="text-4xl font-bold text-center mb-10">
@@ -102,9 +90,9 @@ export default function PricingPage() {
       </h1>
 
       <div className="grid md:grid-cols-3 gap-8">
-        {plans.map((plan, idx) => (
+        {plans.map((plan) => (
           <div
-            key={idx}
+            key={plan.id}
             className={`p-8 rounded-2xl border shadow-sm transition-all ${
               plan.highlight
                 ? "border-purple-500 shadow-purple-300 shadow-lg scale-[1.03]"
@@ -126,6 +114,7 @@ export default function PricingPage() {
               ))}
             </ul>
 
+            {/* FREE PLAN */}
             {plan.free ? (
               <Link
                 href="/app"
@@ -134,10 +123,10 @@ export default function PricingPage() {
                 Start for Free
               </Link>
             ) : (
+              // PAID PLANS — DODO PAYMENTS
               <button
-                // Use a check to disable the button if the session is still loading
                 onClick={() => handlePayment(plan.id)}
-                disabled={loadingPlan === plan.id || session === undefined}
+                disabled={loadingPlan === plan.id}
                 className={`w-full py-3 rounded-xl font-semibold text-white 
                 ${
                   plan.highlight
@@ -147,7 +136,7 @@ export default function PricingPage() {
                 disabled:opacity-50`}
               >
                 {loadingPlan === plan.id
-                  ? "Processing..."
+                  ? "Redirecting..."
                   : plan.highlight
                   ? "Upgrade Now"
                   : "Get Pro"}
