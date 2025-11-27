@@ -9,7 +9,7 @@ export default function PricingPage() {
   const [loadingPlan, setLoadingPlan] = useState("");
 
   // --------------------------------------
-  // DODO PAYMENT LINKS (FINAL + CORRECT)
+  // DODO PAYMENT LINKS
   // --------------------------------------
   const DODO_PLANS: Record<string, string> = {
     advanced:
@@ -20,7 +20,7 @@ export default function PricingPage() {
   };
 
   // --------------------------------------
-  // HANDLE PAYMENT (DIRECT REDIRECT)
+  // HANDLE PAYMENT
   // --------------------------------------
   const handlePayment = (plan: string) => {
     if (!session?.user?.email) {
@@ -30,7 +30,7 @@ export default function PricingPage() {
 
     setLoadingPlan(plan);
 
-    // 🔥 NO API CALL – DIRECT REDIRECT
+    // Direct redirect to DODO payment page
     window.location.href = DODO_PLANS[plan];
   };
 
@@ -84,7 +84,7 @@ export default function PricingPage() {
   // UI
   // --------------------------------------
   return (
-    <div className="w-full max-w-5xl mx-auto px-5 py-20">
+    <div className="w-full max-w-5xl mx-auto px-5 py-20 select-none">
       <h1 className="text-4xl font-bold text-center mb-10">
         Choose the perfect plan for you
       </h1>
@@ -93,11 +93,12 @@ export default function PricingPage() {
         {plans.map((plan) => (
           <div
             key={plan.id}
-            className={`p-8 rounded-2xl border shadow-sm transition-all ${
-              plan.highlight
-                ? "border-purple-500 shadow-purple-300 shadow-lg scale-[1.03]"
-                : "border-gray-200 dark:border-gray-700"
-            }`}
+            className={`p-8 rounded-2xl border shadow-sm transition-all pointer-events-auto relative z-10
+              ${
+                plan.highlight
+                  ? "border-purple-500 shadow-purple-300 shadow-lg scale-[1.03]"
+                  : "border-gray-200 dark:border-gray-700"
+              }`}
           >
             <h2 className="text-2xl font-bold mb-4">{plan.name}</h2>
 
@@ -118,22 +119,22 @@ export default function PricingPage() {
             {plan.free ? (
               <Link
                 href="/app"
-                className="block text-center py-3 rounded-xl font-semibold bg-gray-200 dark:bg-gray-800"
+                className="block text-center py-3 rounded-xl font-semibold bg-gray-200 dark:bg-gray-800 active:scale-95"
               >
                 Start for Free
               </Link>
             ) : (
-              // PAID PLANS — DODO PAYMENTS
               <button
+                type="button"
                 onClick={() => handlePayment(plan.id)}
                 disabled={loadingPlan === plan.id}
-                className={`w-full py-3 rounded-xl font-semibold text-white 
-                ${
-                  plan.highlight
-                    ? "bg-purple-600 hover:bg-purple-700"
-                    : "bg-blue-600 hover:bg-blue-700"
-                }
-                disabled:opacity-50`}
+                className={`w-full py-3 rounded-xl font-semibold text-white relative z-50 active:scale-95 
+                  ${
+                    plan.highlight
+                      ? "bg-purple-600 hover:bg-purple-700"
+                      : "bg-blue-600 hover:bg-blue-700"
+                  }
+                  disabled:opacity-50`}
               >
                 {loadingPlan === plan.id
                   ? "Redirecting..."
