@@ -13,10 +13,10 @@ export default function PricingPage() {
   // --------------------------------------
   const DODO_PLANS: Record<string, string> = {
     advanced:
-      "https://checkout.dodopayments.com/buy/pdt_nnNED1K9UDhBZ9H3abu9I?quantity=1000000&redirect_url=https://www.dahdouhai.live",
+      "https://checkout.dodopayments.com/buy/pdt_nnNED1K9UDhBZ9H3abu9I?quantity=1&redirect_url=https://www.dahdouhai.live",
 
     creator:
-      "https://checkout.dodopayments.com/buy/pdt_ihRKeEv7TrlZTsZaYxZHE?quantity=1000000&redirect_url=https://www.dahdouhai.live",
+      "https://checkout.dodopayments.com/buy/pdt_ihRKeEv7TrlZTsZaYxZHE?quantity=1&redirect_url=https://www.dahdouhai.live",
   };
 
   // --------------------------------------
