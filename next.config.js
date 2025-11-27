@@ -2,6 +2,16 @@
 const nextConfig = {
   reactStrictMode: true,
 
+  async redirects() {
+    return [
+      {
+        source: '/',
+        destination: '/app',
+        permanent: true, // This becomes a 308 Permanent Redirect
+      },
+    ];
+  },
+
   images: {
     remotePatterns: [
       {
