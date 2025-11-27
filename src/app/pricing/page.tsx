@@ -1,25 +1,45 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect } from "react";
+import { useState } from "react";
+import { useSession } from "next-auth/react";
 
 export default function PricingPage() {
+  const { data: session } = useSession();
+  const [loadingPlan, setLoadingPlan] = useState("");
 
-  // Load Lemon.js ONLY on this page
-  useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "https://assets.lemonsqueezy.com/lemon.js";
-    script.defer = true;
-    document.body.appendChild(script);
+  const handlePayment = async (plan: string) => {
+    if (!session?.user?.email) {
+      alert("Please sign in first.");
+      return;
+    }
 
-    return () => {
-      document.body.removeChild(script);
-    };
-  }, []);
+    setLoadingPlan(plan);
+
+    const res = await fetch("/api/payments/create-invoice", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        plan,
+        email: session.user.email,
+      }),
+    });
+
+    const data = await res.json();
+    setLoadingPlan("");
+
+    if (data.invoice_url) {
+      window.location.href = data.invoice_url;
+    } else {
+      alert("Error creating payment. Try again.");
+      console.log(data);
+    }
+  };
 
   const plans = [
     {
       name: "Free",
+      id: "free",
       price: "$0",
       period: "/month",
       features: [
@@ -28,11 +48,11 @@ export default function PricingPage() {
         "🔹 Basic speed",
         "🔹 No image generation"
       ],
-      button: "Start for Free",
-      free: true
+      free: true,
     },
     {
       name: "Dahdouh AI Advanced",
+      id: "advanced",
       price: "$3.75",
       period: "/month",
       highlight: true,
@@ -44,21 +64,18 @@ export default function PricingPage() {
         "🚀 Priority processing",
         "🎨 Image upload"
       ],
-      lemonUrl:
-        "https://dahdouhai.lemonsqueezy.com/buy/b3d7dcf0-3671-4478-b298-0ba2720afa7a?embed=1"
     },
     {
       name: "Pro Creator",
+      id: "creator",
       price: "$9.99",
       period: "/month",
       features: [
         "🎥 20 AI videos/month",
-        "🎨 Image generation HD",
+        "🎨 HD Image generation",
         "📚 Document analysis 200 pages",
         "🤖 API Access (coming soon)"
       ],
-      lemonUrl:
-        "https://dahdouhai.lemonsqueezy.com/buy/YOUR_PRODUCT_ID?embed=1"
     }
   ];
 
@@ -79,6 +96,7 @@ export default function PricingPage() {
             }`}
           >
             <h2 className="text-2xl font-bold mb-4">{plan.name}</h2>
+
             <p className="text-4xl font-bold">
               {plan.price}
               <span className="text-lg font-normal">{plan.period}</span>
@@ -92,7 +110,7 @@ export default function PricingPage() {
               ))}
             </ul>
 
-            {/* FREE PLAN → Normal Link */}
+            {/* FREE PLAN */}
             {plan.free && (
               <Link
                 href="/app"
@@ -102,14 +120,19 @@ export default function PricingPage() {
               </Link>
             )}
 
-            {/* PAID PLAN → Lemon Squeezy Embed Button */}
+            {/* PAID PLANS */}
             {!plan.free && (
-              <a
-                href={plan.lemonUrl}
-                className="mt-8 block text-center py-3 rounded-xl font-semibold bg-purple-600 text-white hover:bg-purple-700 lemonsqueezy-button"
+              <button
+                onClick={() => handlePayment(plan.id)}
+                disabled={loadingPlan === plan.id}
+                className="mt-8 block w-full text-center py-3 rounded-xl font-semibold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50"
               >
-                {plan.highlight ? "Upgrade Now" : "Get Pro"}
-              </a>
+                {loadingPlan === plan.id
+                  ? "Processing..."
+                  : plan.highlight
+                  ? "Upgrade Now"
+                  : "Get Pro"}
+              </button>
             )}
           </div>
         ))}
