@@ -22,7 +22,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
     }
 
-    // Create NOWPayments invoice
+    // Create NOWPayments invoice for FIAT (CARD PAYMENTS)
     const invoiceRes = await fetch("https://api.nowpayments.io/v1/invoice", {
       method: "POST",
       headers: {
@@ -32,8 +32,11 @@ export async function POST(req: Request) {
       body: JSON.stringify({
         price_amount: priceMap[plan],
         price_currency: "usd",
-        pay_currency: "usdttrc20",
-        order_id: plan, // 🔥 send plan for webhook
+
+        // THIS IS THE IMPORTANT FIX
+        pay_currency: "usd", // 🔥 enables Visa, Mastercard, Apple Pay, Google Pay
+
+        order_id: plan,
         order_description: `Dahdouh AI ${plan} plan for ${email}`,
         success_url: "https://dahdouhai.live/success",
         cancel_url: "https://dahdouhai.live/cancel",
