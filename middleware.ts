@@ -1,12 +1,16 @@
 import { auth } from "@/auth";
 import { NextResponse } from "next/server";
+// Import NextRequest from next/server
+import type { NextRequest } from "next/server"; 
 
-// ⭐ Fix TypeScript: manually type the request with auth included
-interface AuthRequest extends Request {
-  auth?: any;
+// ⭐ FIX: Change AuthRequest to extend NextRequest instead of the generic Request
+// NextRequest already includes the 'nextUrl' property.
+interface AuthRequest extends NextRequest {
+  auth?: any; // The property added by NextAuth/Auth.js middleware
 }
 
 export default auth((req: AuthRequest) => {
+  // Line 13 will now correctly access req.nextUrl
   const isLoggedIn = !!req.auth;
   const protectedRoutes = ["/dashboard", "/chat", "/account"];
 
