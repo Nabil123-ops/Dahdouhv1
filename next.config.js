@@ -2,7 +2,6 @@
 const nextConfig = {
   reactStrictMode: true,
 
-  // Fix for Googlebot trying to crawl root domain
   async redirects() {
     return [
       {
@@ -13,7 +12,6 @@ const nextConfig = {
     ];
   },
 
-  // Allow images & static files
   images: {
     remotePatterns: [
       {
@@ -23,13 +21,6 @@ const nextConfig = {
     ],
   },
 
-  // Ensure Next.js pages do not block Googlebot
-  experimental: {
-    optimizeCss: true,
-    scrollRestoration: true,
-  },
-
-  // Prevent SSR crash for bots
   poweredByHeader: false,
 };
 
