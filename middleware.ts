@@ -1,30 +1,22 @@
-import { auth } from "@/auth";
-import { NextResponse } from "next/server";
-// Import NextRequest from next/server
-import type { NextRequest } from "next/server"; 
+// 1. ADD THIS IMPORT STATEMENT
+import NextAuth from "next-auth"; // If using NextAuth v4
+// OR
+import NextAuth from "@auth/nextjs"; // If using Auth.js (NextAuth v5)
+// OR
+import NextAuth from "@auth/core"; // If using Auth.js (NextAuth v5) core for adapter
 
-// ⭐ FIX: Change AuthRequest to extend NextRequest instead of the generic Request
-// NextRequest already includes the 'nextUrl' property.
-interface AuthRequest extends NextRequest {
-  auth?: any; // The property added by NextAuth/Auth.js middleware
-}
+// Given you are on Next.js 14 and using the newer Auth.js structure, 
+// using 'next-auth' or checking which version you installed is key. 
+// Try 'next-auth' first if you see this error.
 
-export default auth((req: AuthRequest) => {
-  // Line 13 will now correctly access req.nextUrl
-  const isLoggedIn = !!req.auth;
-  const protectedRoutes = ["/dashboard", "/chat", "/account"];
+import GoogleProvider from "next-auth/providers/google"; 
+// ... other providers and imports
 
-  const path = req.nextUrl.pathname;
-
-  if (protectedRoutes.some((r) => path.startsWith(r))) {
-    if (!isLoggedIn) {
-      return NextResponse.redirect(new URL("/login", req.url));
-    }
-  }
-
-  return NextResponse.next();
-});
-
-export const config = {
-  matcher: ["/dashboard/:path*", "/chat/:path*", "/account/:path*"],
-};
+// Line 6, which caused the error:
+export const {
+  handlers: { GET, POST },
+  auth,
+  signIn,
+  signOut,
+} = NextAuth({
+// ... rest of your config
