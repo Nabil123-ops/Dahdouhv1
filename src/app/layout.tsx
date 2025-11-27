@@ -4,7 +4,7 @@ import "./globals.css";
 import { ThemeProviders } from "@/utils/theme-providers";
 import ThemeCycle from "./theme-cycle"; // ⭐ NEW - Auto background animation
 // 🔑 Import the SessionWrapper component
-import SessionWrapper from "./components/SessionWrapper"; 
+import SessionWrapper from "@/components/SessionWrapper";
 
 const OutfitFont = Outfit({
 subsets: ["latin"],
