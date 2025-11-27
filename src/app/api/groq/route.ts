@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import User from "@/models/user-model";   // ✅ Make sure this path matches
+import User from "@/app/models/user.model";  // ✅ Make sure this path matches
 import dbConnect from "@/utils/db"; // ✅ your DB connector
 
 interface SearchResult {
