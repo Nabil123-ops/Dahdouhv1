@@ -1,18 +1,16 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
+
 import Link from "next/link";
 import { useState } from "react";
 import { useSession } from "next-auth/react";
-
-export const dynamic = "force-dynamic";
 
 export default function PricingPage() {
   const { data: session } = useSession();
   const [loadingPlan, setLoadingPlan] = useState("");
 
-  // ------------------------------
-  // HANDLE PAYMENT
-  // ------------------------------
   const handlePayment = async (plan: string) => {
     if (!session?.user?.email) {
       alert("Please sign in first.");
@@ -37,19 +35,16 @@ export default function PricingPage() {
       if (data.invoice_url) {
         window.location.href = data.invoice_url;
       } else {
-        alert("Payment error. Please try again.");
-        console.error("Payment API Error:", data);
+        alert("Payment error.");
+        console.error(data);
       }
-    } catch (err) {
+    } catch (e) {
       setLoadingPlan("");
+      console.error(e);
       alert("Something went wrong.");
-      console.error(err);
     }
   };
 
-  // ------------------------------
-  // PRICING PLANS
-  // ------------------------------
   const plans = [
     {
       name: "Free",
@@ -93,9 +88,6 @@ export default function PricingPage() {
     },
   ];
 
-  // ------------------------------
-  // RENDER PAGE
-  // ------------------------------
   return (
     <div className="w-full max-w-5xl mx-auto px-5 py-20">
       <h1 className="text-4xl font-bold text-center mb-10">
@@ -127,7 +119,6 @@ export default function PricingPage() {
               ))}
             </ul>
 
-            {/* FREE PLAN BUTTON */}
             {plan.free ? (
               <Link
                 href="/app"
@@ -136,7 +127,6 @@ export default function PricingPage() {
                 Start for Free
               </Link>
             ) : (
-              // PAID PLANS
               <button
                 onClick={() => handlePayment(plan.id)}
                 disabled={loadingPlan === plan.id}
