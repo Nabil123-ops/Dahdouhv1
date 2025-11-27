@@ -1,22 +1,26 @@
-// 1. ADD THIS IMPORT STATEMENT
-import NextAuth from "next-auth"; // If using NextAuth v4
-// OR
-import NextAuth from "@auth/nextjs"; // If using Auth.js (NextAuth v5)
-// OR
-import NextAuth from "@auth/core"; // If using Auth.js (NextAuth v5) core for adapter
+import { auth } from "@/auth";
+import { NextResponse, type NextRequest } from "next/server"; // Import NextRequest
 
-// Given you are on Next.js 14 and using the newer Auth.js structure, 
-// using 'next-auth' or checking which version you installed is key. 
-// Try 'next-auth' first if you see this error.
+// ⭐ Use NextRequest from next/server to ensure req.nextUrl exists
+interface AuthRequest extends NextRequest {
+  auth?: any; 
+}
 
-import GoogleProvider from "next-auth/providers/google"; 
-// ... other providers and imports
+export default auth((req: AuthRequest) => {
+  const isLoggedIn = !!req.auth;
+  const protectedRoutes = ["/dashboard", "/chat", "/account"];
 
-// Line 6, which caused the error:
-export const {
-  handlers: { GET, POST },
-  auth,
-  signIn,
-  signOut,
-} = NextAuth({
-// ... rest of your config
+  const path = req.nextUrl.pathname;
+
+  if (protectedRoutes.some((r) => path.startsWith(r))) {
+    if (!isLoggedIn) {
+      return NextResponse.redirect(new URL("/login", req.url));
+    }
+  }
+
+  return NextResponse.next();
+});
+
+export const config = {
+  matcher: ["/dashboard/:path*", "/chat/:path*", "/account/:path*"],
+};
