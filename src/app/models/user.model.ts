@@ -14,6 +14,20 @@ const userSchema = new Schema({
     type: String,
     required: [true, "Image is required"],
   },
+
+  // 🔵 ADD SUBSCRIPTION FIELDS
+  plan: {
+    type: String,
+    default: "free", // free, advanced, creator
+  },
+  subscriptionActive: {
+    type: Boolean,
+    default: false,
+  },
+  subscriptionExpires: {
+    type: Date,
+    default: null,
+  },
 });
 
 const User = models?.User || model("User", userSchema);
