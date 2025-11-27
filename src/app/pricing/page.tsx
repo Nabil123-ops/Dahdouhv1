@@ -5,7 +5,6 @@ import { useState } from "react";
 import { useSession } from "next-auth/react";
 
 export const dynamic = "force-dynamic";
-export const revalidate = 0;
 
 export default function PricingPage() {
   const { data: session } = useSession();
