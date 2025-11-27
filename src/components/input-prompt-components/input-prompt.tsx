@@ -8,7 +8,7 @@ import { User } from "next-auth";
 // Zustand
 import geminiZustand from "@/utils/gemini-zustand";
 
-// DB action
+// DB Action
 import { createChat } from "@/actions/actions";
 
 // Icons
@@ -23,7 +23,7 @@ import {
 } from "react-icons/fa";
 
 /* ======================================================
-   MODEL LIST (INCLUDING VIDEO)
+   MODEL LIST
 ====================================================== */
 const MODELS = [
   { label: "Dahdouh AI", id: "dahdouh-ai", icon: <FaBrain /> },
@@ -32,18 +32,13 @@ const MODELS = [
   { label: "Agent", id: "dahdouh-agent", icon: <FaRobot /> },
   { label: "Vision", id: "dahdouh-vision", icon: <MdImageSearch /> },
   { label: "Image", id: "dahdouh-image", icon: <MdImageSearch /> },
-
-  // ⭐ NEW — VIDEO MODEL
-  { label: "Video", id: "dahdouh-video", icon: <FaVideo /> },
+  { label: "Video", id: "dahdouh-video", icon: <FaVideo /> }, // NEW
 ];
 
 /* ======================================================
    REQUIRED PLAN PER MODEL
 ====================================================== */
-const REQUIRED_PLAN: Record<
-  string,
-  "free" | "advanced" | "creator"
-> = {
+const REQUIRED_PLAN: Record<string, "free" | "advanced" | "creator"> = {
   "dahdouh-ai": "free",
   "dahdouh-math": "free",
   "dahdouh-search": "advanced",
@@ -54,22 +49,17 @@ const REQUIRED_PLAN: Record<
 };
 
 /* ======================================================
-   SAFE PLAN LEVELS
+   PLAN LEVELS
 ====================================================== */
-const PLAN_LEVEL: Record<"free" | "advanced" | "creator", number> = {
-  free: 1,
-  advanced: 2,
-  creator: 3,
-};
+const PLAN_LEVEL = { free: 1, advanced: 2, creator: 3 };
 
+/* Safe check */
 function checkAccess(
   userPlan: string | null | undefined,
   required: "free" | "advanced" | "creator"
 ) {
-  const safePlan =
-    (userPlan as "free" | "advanced" | "creator") ?? "free";
-
-  return PLAN_LEVEL[safePlan] >= PLAN_LEVEL[required];
+  const safe = (userPlan as "free" | "advanced" | "creator") ?? "free";
+  return PLAN_LEVEL[safe] >= PLAN_LEVEL[required];
 }
 
 /* ============================================================== */
@@ -90,9 +80,9 @@ const InputPrompt = ({ user }: { user?: User }) => {
     setOptimisticPrompt,
     chosenModel,
     setChosenModel,
-
-    // ⭐ MUST EXIST IN ZUSTAND
     userPlan,
+    guestMessages,
+    setGuestMessages,
   } = geminiZustand();
 
   const [inputImg, setInputImg] = useState<File | null>(null);
@@ -104,29 +94,39 @@ const InputPrompt = ({ user }: { user?: User }) => {
     const prompt = currChat.userPrompt?.trim();
     if (!prompt) return;
 
+    /* ======================================================
+       FREE GUEST LIMIT — ONLY 1 MESSAGE
+    ====================================================== */
     if (!user) {
-      setToast("Please sign in to use Dahdouh AI.");
-      return;
+      if (guestMessages >= 1) {
+        setToast("Create an account to continue chatting with Dahdouh AI.");
+        router.push("/signin");
+        return;
+      }
+      // Allow first-time
+      setGuestMessages(guestMessages + 1);
     }
 
-    // CHECK SUBSCRIPTION (client-side)
-    const required = REQUIRED_PLAN[chosenModel];
-    if (!checkAccess(userPlan || "free", required)) {
-      setToast("Upgrade your plan to use this feature.");
-      router.push("/pricing");
-      return;
+    /* ======================================================
+       Subscription check (logged in only)
+    ====================================================== */
+    if (user) {
+      const required = REQUIRED_PLAN[chosenModel];
+      if (!checkAccess(userPlan, required)) {
+        setToast("Upgrade your plan to use this feature.");
+        router.push("/pricing");
+        return;
+      }
     }
 
     try {
       setMsgLoader(true);
 
-      // Chat ID
       const chatID = (chat as string) || nanoid();
       router.push(`/app/${chatID}`);
 
       setOptimisticPrompt(prompt);
 
-      // Convert image → Base64
       let imgBase64 = null;
       if (inputImg) {
         const buffer = await inputImg.arrayBuffer();
@@ -135,7 +135,6 @@ const InputPrompt = ({ user }: { user?: User }) => {
         ).toString("base64")}`;
       }
 
-      // API CALL
       const res = await fetch("/api/groq", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -143,13 +142,13 @@ const InputPrompt = ({ user }: { user?: User }) => {
           prompt,
           model: chosenModel,
           imgBase64,
-          email: user.email,
+          email: user?.email ?? null,
         }),
       });
 
       const data = await res.json();
 
-      // Handle subscription block message (server side)
+      // Server-side plan block
       if (data?.error && data.error.includes("Upgrade")) {
         setToast(data.error);
         router.push("/pricing");
@@ -163,14 +162,15 @@ const InputPrompt = ({ user }: { user?: User }) => {
       setOptimisticResponse(reply);
       setCurrChat("llmResponse", reply);
 
-      // Save to DB
-      await createChat({
-        chatID,
-        userID: user.id as string,
-        imgName: inputImgName ?? undefined,
-        userPrompt: prompt,
-        llmResponse: reply,
-      });
+      if (user) {
+        await createChat({
+          chatID,
+          userID: user.id as string,
+          imgName: inputImgName ?? undefined,
+          userPrompt: prompt,
+          llmResponse: reply,
+        });
+      }
 
       setMsgLoader(false);
       setInputImg(null);
@@ -185,12 +185,12 @@ const InputPrompt = ({ user }: { user?: User }) => {
   }, [
     currChat.userPrompt,
     user,
+    guestMessages,
+    userPlan,
     chat,
     chosenModel,
     inputImg,
-    userPlan,
     inputImgName,
-    router,
   ]);
 
   /* ======================================================
@@ -198,9 +198,9 @@ const InputPrompt = ({ user }: { user?: User }) => {
   ====================================================== */
   const handleImageUpload = (e: any) => {
     if (!e.target.files?.length) return;
-    const file = e.target.files[0];
-    setInputImg(file);
-    setInputImgName(file.name);
+    const f = e.target.files[0];
+    setInputImg(f);
+    setInputImgName(f.name);
   };
 
   /* ======================================================
@@ -220,7 +220,8 @@ const InputPrompt = ({ user }: { user?: User }) => {
     <div className="flex gap-2 overflow-x-auto py-2 mb-3 model-select-row">
       {MODELS.map((m) => {
         const required = REQUIRED_PLAN[m.id];
-        const locked = !checkAccess(userPlan || "free", required);
+
+        const locked = !checkAccess(userPlan, required);
 
         return (
           <button
@@ -233,15 +234,22 @@ const InputPrompt = ({ user }: { user?: User }) => {
               }
               setChosenModel(m.id);
             }}
-            className={`model-btn flex items-center gap-2 ${
-              chosenModel === m.id ? "active" : ""
-            } ${locked ? "opacity-40 cursor-not-allowed" : ""}`}
+            className={`model-btn flex items-center gap-2 px-3 py-2 rounded-lg
+              transition-all ${
+                chosenModel === m.id
+                  ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md"
+                  : "bg-white/10 dark:bg-black/20 text-gray-300"
+              }
+              ${
+                locked
+                  ? "opacity-40 cursor-not-allowed border border-red-400/30"
+                  : "hover:bg-white/20"
+              }
+            `}
           >
             {m.icon}
             {m.label}
-            {locked && (
-              <span className="text-xs text-red-400 ml-1">★</span>
-            )}
+            {locked && <span className="text-xs text-red-400 ml-1">★</span>}
           </button>
         );
       })}
@@ -252,13 +260,10 @@ const InputPrompt = ({ user }: { user?: User }) => {
     <div className="w-full max-w-3xl mx-auto px-4 pb-6">
       <ModelSelector />
 
-      {/* Image preview */}
       {inputImg && (
         <div className="da-image-preview">
           <MdImageSearch className="text-3xl" />
-          <p className="text-sm font-semibold truncate">
-            {inputImgName}
-          </p>
+          <p className="text-sm font-semibold truncate">{inputImgName}</p>
           <IoMdClose
             className="da-image-close text-red-400 hover:text-red-600"
             onClick={() => {
@@ -269,32 +274,22 @@ const InputPrompt = ({ user }: { user?: User }) => {
         </div>
       )}
 
-      {/* Chatbox */}
       <div className="da-chatbox">
-        <label className="da-attach-btn cursor-pointer">
-          +
-          <input
-            type="file"
-            onChange={handleImageUpload}
-            className="hidden"
-          />
+        <label className="da-attach-btn cursor-pointer">+
+          <input type="file" onChange={handleImageUpload} className="hidden" />
         </label>
 
         <textarea
           ref={textareaRef}
           placeholder="Ask Dahdouh AI anything…"
           value={currChat.userPrompt || ""}
-          onChange={(e) =>
-            setCurrChat("userPrompt", e.target.value)
-          }
+          onChange={(e) => setCurrChat("userPrompt", e.target.value)}
           onKeyDown={handleKeyDown}
           rows={1}
           className="da-textarea"
         />
 
-        <button onClick={generateMsg} className="da-send-btn">
-          ➤
-        </button>
+        <button onClick={generateMsg} className="da-send-btn">➤</button>
       </div>
     </div>
   );
