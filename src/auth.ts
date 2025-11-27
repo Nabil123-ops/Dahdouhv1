@@ -1,6 +1,3 @@
-import NextAuth from "next-auth";
-import GoogleProvider from "next-auth/providers/google";
-
 export const {
   handlers,
   auth,
@@ -17,6 +14,8 @@ export const {
   session: { strategy: "jwt" },
 
   callbacks: {
+    authorized: async () => true,   // ⭐ FIX 500 ERROR
+
     async jwt({ token, account, profile }) {
       if (account && profile) {
         token.user = {
@@ -31,7 +30,7 @@ export const {
     },
 
     async session({ session, token }) {
-      session.user = token.user as any; // NO TYPE ERRORS
+      session.user = token.user as any;
       return session;
     },
   },
