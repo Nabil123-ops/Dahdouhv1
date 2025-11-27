@@ -7,31 +7,34 @@ export async function POST(req: Request) {
     await connectDB();
 
     const body = await req.json();
-
     console.log("NOWPayments Webhook:", body);
 
-    const { invoice_id, price_amount, order_id, payment_status, customer_email } = body;
+    const {
+      order_id,               // "advanced" or "creator"
+      customer_email,         // user email
+      payment_status,
+    } = body;
 
-    // Only activate subscription after confirmed payment
+    // Only activate subscription after successful payment
     if (payment_status !== "finished") {
       return NextResponse.json({ status: "ignored" });
     }
 
-    // Determine plan
+    // Determine plan from order_id
     let plan = "free";
     let expires = null;
 
     if (order_id === "advanced") {
       plan = "advanced";
       expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-    }
-
+    } 
+    
     if (order_id === "creator") {
       plan = "creator";
       expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
     }
 
-    // Update user in database
+    // Update user in DB
     const updatedUser = await User.findOneAndUpdate(
       { email: customer_email },
       { plan, expires },
