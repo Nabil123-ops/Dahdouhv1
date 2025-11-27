@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import User from "@/app/models/user.model";  // ✅ Make sure this path matches
-import dbConnect from "@/utils/db"; // ✅ your DB connector
+import User from "@/app/models/user.model";
+import dbConnect from "@/utils/db";
 
 interface SearchResult {
   title: string;
@@ -39,7 +39,7 @@ async function runGoogleSearch(query: string): Promise<SearchResult[]> {
 }
 
 /* ============================================================
-   MAIN POST HANDLER — WITH SUBSCRIPTION CHECKS
+   POST HANDLER WITH SUBSCRIPTION CHECKS
 ============================================================ */
 export async function POST(req: Request) {
   try {
@@ -58,12 +58,11 @@ export async function POST(req: Request) {
     /* ============================================================
        FETCH USER + CHECK EXPIRATION
     ============================================================ */
-    let user = null;
+    let user: any = null;
 
     if (email) {
       user = await User.findOne({ email });
 
-      // Auto-downgrade expired subscriptions
       if (user?.expires && new Date(user.expires) < new Date()) {
         user.plan = "free";
         await user.save();
@@ -73,10 +72,8 @@ export async function POST(req: Request) {
     const plan = user?.plan || "free";
 
     /* ============================================================
-       SUBSCRIPTION RESTRICTION RULES
+       SUBSCRIPTION RULES
     ============================================================ */
-
-    // ❌ Block Dahdouh Agent for free users
     if (model === "dahdouh-agent" && plan === "free") {
       return NextResponse.json(
         { error: "Upgrade required to use Dahdouh Agent." },
@@ -84,7 +81,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // ❌ Block Vision Model for free
     if (model === "dahdouh-vision" && plan === "free") {
       return NextResponse.json(
         { error: "Upgrade required to use Vision (image upload)." },
@@ -92,7 +88,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // ❌ Block HD Image Generator for free + advanced
     if (model === "dahdouh-image" && plan !== "creator") {
       return NextResponse.json(
         { error: "Creator Plan required for HD image generation." },
@@ -100,7 +95,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // ❌ Block Video AI for free + advanced (when you add it later)
     if (model === "dahdouh-video" && plan !== "creator") {
       return NextResponse.json(
         { error: "Creator Plan required for AI video generation." },
@@ -108,19 +102,10 @@ export async function POST(req: Request) {
       );
     }
 
-    // ❌ Block search for free users (optional)
     if (model === "dahdouh-search" && plan === "free") {
       return NextResponse.json(
         { error: "Upgrade required to use AI Search mode." },
         { status: 403 }
-      );
-    }
-
-    const GROQ_KEY = process.env.GROQ_API_KEY;
-    if (!GROQ_KEY) {
-      return NextResponse.json(
-        { error: "Missing GROQ_API_KEY" },
-        { status: 500 }
       );
     }
 
@@ -134,14 +119,66 @@ export async function POST(req: Request) {
       "dahdouh-agent": "meta-llama/llama-4-scout-17b-16e-instruct",
       "dahdouh-vision": "meta-llama/llama-4-scout-17b-16e-instruct",
       "dahdouh-image": "luma/llama-3.2-vision-image-1b",
+      "dahdouh-video": "luma/llama-3.2-video-1b", // ⭐ ADDED VIDEO SUPPORT
     };
 
     const selectedModel =
       MODEL_MAP[(model as keyof typeof MODEL_MAP) || "dahdouh-ai"];
 
+    const GROQ_KEY = process.env.GROQ_API_KEY;
+    if (!GROQ_KEY) {
+      return NextResponse.json(
+        { error: "Missing GROQ_API_KEY" },
+        { status: 500 }
+      );
+    }
+
+    /* ============================================================
+       VIDEO MODEL SUPPORT
+============================================================ */
+    if (model === "dahdouh-video") {
+      const res = await fetch(
+        "https://api.groq.com/openai/v1/chat/completions",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${GROQ_KEY}`,
+          },
+          body: JSON.stringify({
+            model: selectedModel,
+            response_format: { type: "json_object" },
+            messages: [
+              {
+                role: "user",
+                content: `Generate a short MP4 video for this prompt: "${prompt}". Return ONLY Base64 encoded video.`,
+              },
+            ],
+          }),
+        }
+      );
+
+      const data = await res.json().catch(() => null);
+
+      let base64 = null;
+      try {
+        const parsed = JSON.parse(
+          data?.choices?.[0]?.message?.content || "{}"
+        );
+        base64 = parsed.video_base64 || null;
+      } catch {
+        base64 = null;
+      }
+
+      return NextResponse.json({
+        video: base64,
+        reply: base64 ? "Video generated." : "Failed to generate video.",
+      });
+    }
+
     /* ============================================================
        SEARCH MODEL
-    ============================================================ */
+============================================================ */
     if (model === "dahdouh-search") {
       const results = await runGoogleSearch(prompt);
 
@@ -149,19 +186,19 @@ export async function POST(req: Request) {
         return NextResponse.json({ reply: "No results found." });
       }
 
-      const formatted = results
-        .map(
-          (r, i) =>
-            `${i + 1}. **${r.title}**\n${r.snippet}\n${r.link}`
-        )
-        .join("\n\n");
-
-      return NextResponse.json({ reply: formatted });
+      return NextResponse.json({
+        reply: results
+          .map(
+            (r, i) =>
+              `${i + 1}. **${r.title}**\n${r.snippet}\n${r.link}`
+          )
+          .join("\n\n"),
+      });
     }
 
     /* ============================================================
        AGENT MODEL
-    ============================================================ */
+============================================================ */
     if (model === "dahdouh-agent") {
       const searchResults = await runGoogleSearch(prompt);
 
@@ -211,17 +248,14 @@ ${prompt}
 
     /* ============================================================
        VISION MODEL
-    ============================================================ */
+============================================================ */
     if (model === "dahdouh-vision") {
-      const messages: any[] = [
-        {
-          role: "user",
-          content: [{ type: "text", text: prompt || "Describe this image." }],
-        },
+      const content: any[] = [
+        { type: "text", text: prompt || "Describe this image." },
       ];
 
       if (imgBase64) {
-        messages[0].content.push({
+        content.push({
           type: "image_url",
           image_url: { url: imgBase64 },
         });
@@ -237,7 +271,7 @@ ${prompt}
           },
           body: JSON.stringify({
             model: selectedModel,
-            messages,
+            messages: [{ role: "user", content }],
           }),
         }
       );
@@ -252,8 +286,8 @@ ${prompt}
     }
 
     /* ============================================================
-       IMAGE GENERATION MODEL
-    ============================================================ */
+       IMAGE GENERATION
+============================================================ */
     if (model === "dahdouh-image") {
       const res = await fetch(
         "https://api.groq.com/openai/v1/chat/completions",
@@ -296,7 +330,7 @@ ${prompt}
 
     /* ============================================================
        MATH MODEL
-    ============================================================ */
+============================================================ */
     let finalPrompt = prompt;
 
     if (model === "dahdouh-math") {
@@ -309,8 +343,8 @@ ${prompt}
     }
 
     /* ============================================================
-       DEFAULT NORMAL CHAT
-    ============================================================ */
+       DEFAULT CHAT
+============================================================ */
     const res = await fetch(
       "https://api.groq.com/openai/v1/chat/completions",
       {
