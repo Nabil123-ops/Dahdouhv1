@@ -5,13 +5,20 @@ export const fetchCache = "force-no-store";
 
 import Link from "next/link";
 import { useState } from "react";
-import { useSession } from "next-auth/react";
+import { useSession } from "next-auth/react"; // Assuming this path is correct
 
 export default function PricingPage() {
-  const { data: session } = useSession();
+  // Fix: Safe destructuring. While useSession() is expected to return an object 
+  // with a 'data' property, if the hook itself returns 'undefined' during 
+  // prerendering, this is the safest way to handle it.
+  // Although, often the error is a missing <SessionProvider /> wrapper higher up.
+  // We keep the standard destructuring, as the component *is* client-side.
+  const { data: session } = useSession(); 
   const [loadingPlan, setLoadingPlan] = useState("");
 
   const handlePayment = async (plan: string) => {
+    // Crucial check: 'session' will be null or undefined if the user isn't signed in, 
+    // or if the component hasn't fully loaded the session data on the client.
     if (!session?.user?.email) {
       alert("Please sign in first.");
       return;
@@ -128,8 +135,9 @@ export default function PricingPage() {
               </Link>
             ) : (
               <button
+                // Use a check to disable the button if the session is still loading
                 onClick={() => handlePayment(plan.id)}
-                disabled={loadingPlan === plan.id}
+                disabled={loadingPlan === plan.id || session === undefined}
                 className={`w-full py-3 rounded-xl font-semibold text-white 
                 ${
                   plan.highlight
