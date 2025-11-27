@@ -7,6 +7,29 @@ interface SearchResult {
 }
 
 /* ============================================================
+   FREE LIMIT: 1 FREE MESSAGE PER USER (COOKIE BASED)
+============================================================ */
+function checkFreeLimit(req: Request) {
+  const cookieHeader = req.headers.get("cookie") || "";
+  const alreadyUsed = cookieHeader.includes("free_used=true");
+
+  if (alreadyUsed) {
+    return NextResponse.json(
+      {
+        error: "limit_reached",
+        message: "You already used your free message. Please sign in to continue.",
+      },
+      { status: 403 }
+    );
+  }
+
+  // First-time user: allow request and set cookie
+  const res = NextResponse.next();
+  res.headers.append("Set-Cookie", "free_used=true; Path=/; Max-Age=2592000"); // 30 days
+  return res;
+}
+
+/* ============================================================
    GOOGLE SEARCH FUNCTION
 ============================================================ */
 async function runGoogleSearch(query: string): Promise<SearchResult[]> {
@@ -23,8 +46,7 @@ async function runGoogleSearch(query: string): Promise<SearchResult[]> {
     const res = await fetch(url);
     const json = await res.json();
 
-    if (json.error) return [];
-    if (!json.items) return [];
+    if (json.error || !json.items) return [];
 
     return json.items.map((item: any) => ({
       title: item.title,
@@ -41,6 +63,18 @@ async function runGoogleSearch(query: string): Promise<SearchResult[]> {
 ============================================================ */
 export async function POST(req: Request) {
   try {
+    /* ============================================================
+       FREE LIMIT CHECK
+    ============================================================ */
+    const freeCheck = checkFreeLimit(req);
+    // If limit reached → return error
+    if (freeCheck instanceof NextResponse && freeCheck.status === 403) {
+      return freeCheck;
+    }
+
+    /* ============================================================
+       READ USER INPUT
+    ============================================================ */
     const { prompt, model, imgBase64 } = await req.json();
 
     if (!prompt && !imgBase64)
@@ -49,12 +83,12 @@ export async function POST(req: Request) {
     const GROQ_KEY = process.env.GROQ_API_KEY;
     if (!GROQ_KEY)
       return NextResponse.json(
-        { error: "Missing GROQ_API_KEY" },
+        { error: "Missing GROQ_API_KEY ENV" },
         { status: 500 }
       );
 
     /* ============================================================
-       MODEL MAP (UNCHANGED)
+       MODEL MAP
     ============================================================ */
     const MODEL_MAP = {
       "dahdouh-ai": "llama-3.3-70b-versatile",
@@ -62,7 +96,7 @@ export async function POST(req: Request) {
       "dahdouh-search": "openai/gpt-oss-20b",
       "dahdouh-agent": "meta-llama/llama-4-scout-17b-16e-instruct",
       "dahdouh-vision": "meta-llama/llama-4-scout-17b-16e-instruct",
-      "dahdouh-image": "luma/llama-3.2-vision-image-1b" // ⭐ ADDED IMAGE MODEL
+      "dahdouh-image": "luma/llama-3.2-vision-image-1b",
     };
 
     type ModelKey = keyof typeof MODEL_MAP;
@@ -73,8 +107,11 @@ export async function POST(req: Request) {
     ============================================================ */
     if (model === "dahdouh-search") {
       const results = await runGoogleSearch(prompt);
+
       if (results.length === 0)
-        return NextResponse.json({ reply: "No results found." });
+        return NextResponse.json({
+          reply: "No results found.",
+        });
 
       return NextResponse.json({
         reply: results
@@ -90,12 +127,12 @@ export async function POST(req: Request) {
        AGENT MODEL
     ============================================================ */
     if (model === "dahdouh-agent") {
-      const searchResults = await runGoogleSearch(prompt);
+      const googleResults = await runGoogleSearch(prompt);
 
       const sources =
-        searchResults.length === 0
+        googleResults.length === 0
           ? "No sources."
-          : searchResults
+          : googleResults
               .slice(0, 5)
               .map((s, i) => `(${i + 1}) ${s.title} — ${s.link}`)
               .join("\n");
@@ -111,27 +148,24 @@ User question:
 ${prompt}
 `;
 
-      const res = await fetch(
-        "https://api.groq.com/openai/v1/chat/completions",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${GROQ_KEY}`,
-          },
-          body: JSON.stringify({
-            model: selectedModel,
-            messages: [{ role: "user", content: agentPrompt }],
-            temperature: 0.4,
-          }),
-        }
-      );
+      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${GROQ_KEY}`,
+        },
+        body: JSON.stringify({
+          model: selectedModel,
+          messages: [{ role: "user", content: agentPrompt }],
+          temperature: 0.4,
+        }),
+      });
 
       const data = await res.json();
 
       return NextResponse.json({
         reply: data?.choices?.[0]?.message?.content || "No response.",
-        sources: searchResults,
+        sources: googleResults,
       });
     }
 
@@ -153,20 +187,17 @@ ${prompt}
         });
       }
 
-      const res = await fetch(
-        "https://api.groq.com/openai/v1/chat/completions",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${GROQ_KEY}`,
-          },
-          body: JSON.stringify({
-            model: selectedModel,
-            messages,
-          }),
-        }
-      );
+      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${GROQ_KEY}`,
+        },
+        body: JSON.stringify({
+          model: selectedModel,
+          messages,
+        }),
+      });
 
       const data = await res.json();
 
@@ -176,29 +207,26 @@ ${prompt}
     }
 
     /* ============================================================
-       IMAGE GENERATION MODEL (NEW)
+       IMAGE GENERATION MODEL
     ============================================================ */
     if (model === "dahdouh-image") {
-      const res = await fetch(
-        "https://api.groq.com/openai/v1/chat/completions",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${GROQ_KEY}`,
-          },
-          body: JSON.stringify({
-            model: selectedModel,
-            response_format: { type: "json_object" },
-            messages: [
-              {
-                role: "user",
-                content: `Generate an image using this prompt: "${prompt}". Return ONLY Base64.`,
-              },
-            ],
-          }),
-        }
-      );
+      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${GROQ_KEY}`,
+        },
+        body: JSON.stringify({
+          model: selectedModel,
+          response_format: { type: "json_object" },
+          messages: [
+            {
+              role: "user",
+              content: `Generate an image using this prompt: "${prompt}". Return ONLY Base64.`,
+            },
+          ],
+        }),
+      });
 
       const data = await res.json();
 
@@ -217,47 +245,44 @@ ${prompt}
     }
 
     /* ============================================================
-       MATH MODEL (NO LaTeX)
+       MATH MODEL (NO LATEX)
     ============================================================ */
     let finalPrompt = prompt;
 
     if (model === "dahdouh-math") {
       finalPrompt = `
-Explain this math problem step-by-step using simple text.
-Do NOT use LaTeX or symbols. Write normally like a teacher.
+Explain this math problem step-by-step in simple English.
+Do NOT use LaTeX.
 
 ${prompt}
 `;
     }
 
     /* ============================================================
-       DEFAULT NORMAL CHAT (Dahdouh AI)
+       DEFAULT NORMAL CHAT MODEL
     ============================================================ */
-    const res = await fetch(
-      "https://api.groq.com/openai/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${GROQ_KEY}`,
-        },
-        body: JSON.stringify({
-          model: selectedModel,
-          messages: [{ role: "user", content: finalPrompt }],
-          temperature: 0.5,
-        }),
-      }
-    );
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${GROQ_KEY}`,
+      },
+      body: JSON.stringify({
+        model: selectedModel,
+        messages: [{ role: "user", content: finalPrompt }],
+        temperature: 0.5,
+      }),
+    });
 
     const data = await res.json();
 
     return NextResponse.json({
       reply: data?.choices?.[0]?.message?.content || "No response.",
     });
-  } catch (e) {
-    console.error("API ERROR:", e);
+  } catch (err) {
+    console.error("API ERROR:", err);
     return NextResponse.json(
-      { error: "Server error", detail: `${e}` },
+      { error: "Server error", detail: String(err) },
       { status: 500 }
     );
   }
