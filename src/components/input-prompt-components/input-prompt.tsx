@@ -4,22 +4,16 @@ import React, { useCallback, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { nanoid } from "nanoid";
 import { User } from "next-auth";
-
-// Zustand
 import geminiZustand from "@/utils/gemini-zustand";
-
-// Actions
 import { createChat } from "@/actions/actions";
 
 // Icons
 import { MdImageSearch } from "react-icons/md";
 import { IoMdClose } from "react-icons/io";
-
-// Model icons
-import { FaBrain, FaCalculator, FaSearch, FaRobot } from "react-icons/fa";
+import { FaBrain, FaCalculator, FaSearch, FaRobot, FaVideo } from "react-icons/fa";
 
 /* ======================================================
-   Dahdouh AI MODELS
+   MODEL LIST (FULL + VIDEO)
 ====================================================== */
 const MODELS = [
   { label: "Dahdouh AI", id: "dahdouh-ai", icon: <FaBrain /> },
@@ -27,11 +21,32 @@ const MODELS = [
   { label: "Search", id: "dahdouh-search", icon: <FaSearch /> },
   { label: "Agent", id: "dahdouh-agent", icon: <FaRobot /> },
   { label: "Vision", id: "dahdouh-vision", icon: <MdImageSearch /> },
-
-  // ⭐ NEW — Image Generator
   { label: "Image", id: "dahdouh-image", icon: <MdImageSearch /> },
+
+  // ⭐ NEW VIDEO MODEL
+  { label: "Video", id: "dahdouh-video", icon: <FaVideo /> },
 ];
-// ------------------------------------------------------
+
+/* ======================================================
+   MODEL → REQUIRED PLAN
+====================================================== */
+const REQUIRED_PLAN: Record<string, "free" | "advanced" | "creator"> = {
+  "dahdouh-ai": "free",
+  "dahdouh-math": "free",
+  "dahdouh-search": "advanced",
+  "dahdouh-agent": "creator",
+  "dahdouh-vision": "creator",
+  "dahdouh-image": "creator",
+  "dahdouh-video": "creator",
+};
+
+const PLAN_LEVEL = { free: 1, advanced: 2, creator: 3 };
+
+function checkAccess(userPlan: string, required: string) {
+  return PLAN_LEVEL[userPlan] >= PLAN_LEVEL[required];
+}
+
+/* ============================================================== */
 
 const InputPrompt = ({ user }: { user?: User }) => {
   const router = useRouter();
@@ -49,6 +64,7 @@ const InputPrompt = ({ user }: { user?: User }) => {
     setOptimisticPrompt,
     chosenModel,
     setChosenModel,
+    userPlan, // ⭐ should be included in Zustand state
   } = geminiZustand();
 
   const [inputImg, setInputImg] = useState<File | null>(null);
@@ -65,17 +81,22 @@ const InputPrompt = ({ user }: { user?: User }) => {
       return;
     }
 
+    // ❌ Subscription check (client side)
+    const required = REQUIRED_PLAN[chosenModel];
+    if (!checkAccess(userPlan || "free", required)) {
+      setToast("Upgrade your plan to use this feature.");
+      router.push("/pricing");
+      return;
+    }
+
     try {
       setMsgLoader(true);
 
-      // Chat ID for this session
       const chatID = (chat as string) || nanoid();
       router.push(`/app/${chatID}`);
-
-      // 🔵 Optimistic user prompt
       setOptimisticPrompt(prompt);
 
-      /* IMAGE → BASE64 */
+      /* IMAGE BASE64 */
       let imgBase64 = null;
       if (inputImg) {
         const buffer = await inputImg.arrayBuffer();
@@ -84,7 +105,7 @@ const InputPrompt = ({ user }: { user?: User }) => {
         )}`;
       }
 
-      /* SEND TO AI */
+      /* SEND TO API */
       const res = await fetch("/api/groq", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -92,30 +113,25 @@ const InputPrompt = ({ user }: { user?: User }) => {
           prompt,
           model: chosenModel,
           imgBase64,
+          email: user.email,
         }),
       });
 
       const data = await res.json();
 
-      // AI Response
-      const rawReply =
-        data?.reply ||
-        data?.error ||
-        data?.results ||
-        "⚠ No response from AI.";
+      // API returned a subscription error
+      if (data?.error && data?.error.includes("Upgrade")) {
+        setToast(data.error);
+        router.push("/pricing");
+        setMsgLoader(false);
+        return;
+      }
 
-      const reply =
-        typeof rawReply === "string" ? rawReply : JSON.stringify(rawReply);
-
-      // 🔵 Optimistic AI reply
-      setOptimisticResponse(
-        typeof reply === "string" ? reply : JSON.stringify(reply)
-      );
-
-      // 🔵 Store REAL AI reply so message stays
+      const reply = data?.reply || data?.error || "⚠ No response from AI.";
+      setOptimisticResponse(reply);
       setCurrChat("llmResponse", reply);
 
-      /* SAVE TO DB */
+      /* Save to DB */
       await createChat({
         chatID,
         userID: user.id as string,
@@ -124,11 +140,9 @@ const InputPrompt = ({ user }: { user?: User }) => {
         llmResponse: reply,
       });
 
-      /* RESET */
       setMsgLoader(false);
       setInputImg(null);
       setInputImgName(null);
-
       setTimeout(() => setCurrChat("userPrompt", ""), 150);
     } catch (err) {
       console.error("AI Error:", err);
@@ -141,8 +155,9 @@ const InputPrompt = ({ user }: { user?: User }) => {
     chat,
     chosenModel,
     inputImg,
+    userPlan,
     inputImgName,
-    setCurrChat,
+    router,
   ]);
 
   /* ======================================================
@@ -170,18 +185,31 @@ const InputPrompt = ({ user }: { user?: User }) => {
   ====================================================== */
   const ModelSelector = () => (
     <div className="flex gap-2 overflow-x-auto py-2 mb-3 model-select-row">
-      {MODELS.map((m) => (
-        <button
-          key={m.id}
-          onClick={() => setChosenModel(m.id)}
-          className={`model-btn flex items-center gap-2 ${
-            chosenModel === m.id ? "active" : ""
-          } ${m.id}`}
-        >
-          {m.icon}
-          {m.label}
-        </button>
-      ))}
+      {MODELS.map((m) => {
+        const required = REQUIRED_PLAN[m.id];
+        const locked = !checkAccess(userPlan || "free", required);
+
+        return (
+          <button
+            key={m.id}
+            onClick={() => {
+              if (locked) {
+                setToast("Upgrade required for this model.");
+                router.push("/pricing");
+                return;
+              }
+              setChosenModel(m.id);
+            }}
+            className={`model-btn flex items-center gap-2 ${
+              chosenModel === m.id ? "active" : ""
+            } ${locked ? "opacity-40 cursor-not-allowed" : ""}`}
+          >
+            {m.icon}
+            {m.label}
+            {locked && <span className="text-xs text-red-400 ml-1">★</span>}
+          </button>
+        );
+      })}
     </div>
   );
 
@@ -189,12 +217,11 @@ const InputPrompt = ({ user }: { user?: User }) => {
     <div className="w-full max-w-3xl mx-auto px-4 pb-6">
       <ModelSelector />
 
-      {/* Uploaded Image Preview */}
+      {/* Image preview */}
       {inputImg && (
         <div className="da-image-preview">
           <MdImageSearch className="text-3xl" />
           <p className="text-sm font-semibold truncate">{inputImgName}</p>
-
           <IoMdClose
             className="da-image-close text-red-400 hover:text-red-600"
             onClick={() => {
