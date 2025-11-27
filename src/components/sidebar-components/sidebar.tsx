@@ -194,14 +194,15 @@ const SideBar = ({ user, sidebarList }: { user?: User; sidebarList: any }) => {
           </li>
         </ul>
 
-        {/* Upgrade button */}
-        <DevButton
-          variant="v1"
-          className="gap-2 mt-3 text-sm md:!hidden !flex"
-        >
-          <FaCrown className="text-lg text-yellow-400" />
-          Upgrade to Dahdouh Pro
-        </DevButton>
+        {/* Upgrade button — MOBILE */}
+<DevButton
+  variant="v1"
+  className="gap-2 mt-3 text-sm md:!hidden !flex"
+  onClick={() => router.push("/pricing")} // ← THIS IS THE FIX
+>
+  <FaCrown className="text-lg text-yellow-400" />
+  Upgrade to Dahdouh Pro
+</DevButton>
 
         {/* Bottom location + branding */}
         <div className={`transform overflow-hidden ${open ? "block" : "hidden"}`}>
