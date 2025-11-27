@@ -1,7 +1,12 @@
 import { auth } from "@/auth";
 import { NextResponse } from "next/server";
 
-export default auth((req) => {
+// ⭐ Fix TypeScript: manually type the request with auth included
+interface AuthRequest extends Request {
+  auth?: any;
+}
+
+export default auth((req: AuthRequest) => {
   const isLoggedIn = !!req.auth;
   const protectedRoutes = ["/dashboard", "/chat", "/account"];
 
