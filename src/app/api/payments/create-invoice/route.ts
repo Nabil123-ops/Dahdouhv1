@@ -12,7 +12,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // Prices in USDT
+    // Plan prices in USD
     const priceMap: any = {
       advanced: 3.75,
       creator: 9.99,
@@ -22,26 +22,24 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
     }
 
-    // Create invoice
-    const invoiceRes = await fetch(
-      "https://api.nowpayments.io/v1/invoice",
-      {
-        method: "POST",
-        headers: {
-          "x-api-key": API_KEY,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          price_amount: priceMap[plan],
-          price_currency: "usd",
-          pay_currency: "usdttrc20", // 🔥 TRC20 compatible worldwide
-          order_id: `${email}-${Date.now()}`,
-          order_description: `Dahdouh AI ${plan} plan`,
-          success_url: "https://dahdouhai.live/success",
-          cancel_url: "https://dahdouhai.live/cancel",
-        }),
-      }
-    );
+    // Create NOWPayments invoice
+    const invoiceRes = await fetch("https://api.nowpayments.io/v1/invoice", {
+      method: "POST",
+      headers: {
+        "x-api-key": API_KEY,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        price_amount: priceMap[plan],
+        price_currency: "usd",
+        pay_currency: "usdttrc20",
+        order_id: plan, // 🔥 send plan for webhook
+        order_description: `Dahdouh AI ${plan} plan for ${email}`,
+        success_url: "https://dahdouhai.live/success",
+        cancel_url: "https://dahdouhai.live/cancel",
+        customer_email: email,
+      }),
+    });
 
     const invoiceData = await invoiceRes.json();
     return NextResponse.json(invoiceData);
