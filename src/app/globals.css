@@ -42,16 +42,15 @@ color: white;
 body::before {
   content: "";
   position: absolute;
-  top: -10%;
-  left: -10%;
-  width: 120%;
-  height: 120%;
+  top: 0;      /* FIX */
+  left: 0;     /* FIX */
+  width: 100%; /* FIX */
+  height: 100%;/* FIX */
   pointer-events: none;
+  z-index: -1;
   background: radial-gradient(circle at 30% 20%, #4f46e530, transparent 70%),
               radial-gradient(circle at 80% 70%, #06b6d430, transparent 70%);
-  z-index: -1;
-  filter: blur(20px); /* was 60px — 3x lighter for phones */
-  animation: none;    /* STOP animation on mobile */
+  filter: blur(20px);
 }
 
 @keyframes bgFloat {
