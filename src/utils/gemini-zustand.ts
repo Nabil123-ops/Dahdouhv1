@@ -41,6 +41,14 @@ interface GeminiState {
   // ⭐ GROQ API KEY STATE
   groqApiKey: string;
   setGroqApiKey: (key: string) => void;
+
+  // ⭐ NEW: USER PLAN STATE
+  userPlan: "free" | "advanced" | "creator";
+  setUserPlan: (plan: "free" | "advanced" | "creator") => void;
+
+  // ⭐ NEW: SUBSCRIPTION EXPIRATION
+  subscriptionExpires: Date | null;
+  setSubscriptionExpires: (date: Date | null) => void;
 }
 
 const geminiZustand = create<GeminiState>()((set) => ({
@@ -77,13 +85,21 @@ const geminiZustand = create<GeminiState>()((set) => ({
   customPrompt: { prompt: null, placeholder: null },
   setCustomPrompt: (v) => set({ customPrompt: v }),
 
-  // ⭐ Default Groq model
+  // ⭐ Default model
   chosenModel: "dahdouh-ai",
   setChosenModel: (modelId: string) => set({ chosenModel: modelId }),
 
   // ⭐ GROQ API KEY STATE
   groqApiKey: "",
   setGroqApiKey: (key: string) => set({ groqApiKey: key }),
+
+  // ⭐ NEW: USER PLAN (DEFAULT = FREE)
+  userPlan: "free",
+  setUserPlan: (plan) => set({ userPlan: plan }),
+
+  // ⭐ NEW: SUBSCRIPTION EXPIRATION
+  subscriptionExpires: null,
+  setSubscriptionExpires: (date) => set({ subscriptionExpires: date }),
 }));
 
 export default geminiZustand;
