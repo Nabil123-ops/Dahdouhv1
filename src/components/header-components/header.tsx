@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import SignInNow from "@/components/header-components/signin-now";
 import { auth } from "@/auth";
