@@ -1,7 +1,7 @@
 'use client'
 import PromptCards from '@/components/prompt-gallery-components/prompt-cards'
 import React from 'react'
-import Prompts from "../../../../../utils/prompts-array.json"
+import promptsArray from "@/utils/prompts-array.json";
 import Masonry from "react-masonry-css";
 
 
