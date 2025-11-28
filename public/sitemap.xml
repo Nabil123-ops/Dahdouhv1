@@ -1,14 +1,60 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
+  <!-- HOME -->
   <url>
     <loc>https://dahdouhai.live/</loc>
+    <lastmod>2025-11-28</lastmod>
     <priority>1.00</priority>
   </url>
 
+  <!-- APP DASHBOARD -->
   <url>
     <loc>https://dahdouhai.live/app</loc>
+    <lastmod>2025-11-28</lastmod>
+    <priority>0.95</priority>
+  </url>
+
+  <!-- APP: NEW CHAT -->
+  <url>
+    <loc>https://dahdouhai.live/app/</loc>
+    <lastmod>2025-11-28</lastmod>
     <priority>0.90</priority>
+  </url>
+
+  <!-- PROMPT GALLERY -->
+  <url>
+    <loc>https://dahdouhai.live/app/prompt-gallery</loc>
+    <lastmod>2025-11-28</lastmod>
+    <priority>0.85</priority>
+  </url>
+
+  <!-- SIGN IN -->
+  <url>
+    <loc>https://dahdouhai.live/signin</loc>
+    <lastmod>2025-11-28</lastmod>
+    <priority>0.80</priority>
+  </url>
+
+  <!-- PRICING -->
+  <url>
+    <loc>https://dahdouhai.live/pricing</loc>
+    <lastmod>2025-11-28</lastmod>
+    <priority>0.80</priority>
+  </url>
+
+  <!-- PRIVACY POLICY -->
+  <url>
+    <loc>https://dahdouhai.live/privacy</loc>
+    <lastmod>2025-11-28</lastmod>
+    <priority>0.60</priority>
+  </url>
+
+  <!-- TERMS OF USE -->
+  <url>
+    <loc>https://dahdouhai.live/terms</loc>
+    <lastmod>2025-11-28</lastmod>
+    <priority>0.60</priority>
   </url>
 
 </urlset>
