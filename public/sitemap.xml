@@ -1,60 +1,110 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
-  <!-- HOME -->
+  <!-- ===================== -->
+  <!-- MAIN PAGES -->
+  <!-- ===================== -->
+
   <url>
     <loc>https://dahdouhai.live/</loc>
     <lastmod>2025-11-28</lastmod>
     <priority>1.00</priority>
   </url>
 
-  <!-- APP DASHBOARD -->
   <url>
     <loc>https://dahdouhai.live/app</loc>
     <lastmod>2025-11-28</lastmod>
     <priority>0.95</priority>
   </url>
 
-  <!-- APP: NEW CHAT -->
   <url>
     <loc>https://dahdouhai.live/app/</loc>
     <lastmod>2025-11-28</lastmod>
     <priority>0.90</priority>
   </url>
 
-  <!-- PROMPT GALLERY -->
   <url>
     <loc>https://dahdouhai.live/app/prompt-gallery</loc>
     <lastmod>2025-11-28</lastmod>
     <priority>0.85</priority>
   </url>
 
-  <!-- SIGN IN -->
   <url>
     <loc>https://dahdouhai.live/signin</loc>
     <lastmod>2025-11-28</lastmod>
     <priority>0.80</priority>
   </url>
 
-  <!-- PRICING -->
   <url>
     <loc>https://dahdouhai.live/pricing</loc>
     <lastmod>2025-11-28</lastmod>
     <priority>0.80</priority>
   </url>
 
-  <!-- PRIVACY POLICY -->
   <url>
     <loc>https://dahdouhai.live/privacy</loc>
     <lastmod>2025-11-28</lastmod>
     <priority>0.60</priority>
   </url>
 
-  <!-- TERMS OF USE -->
   <url>
     <loc>https://dahdouhai.live/terms</loc>
     <lastmod>2025-11-28</lastmod>
     <priority>0.60</priority>
   </url>
+
+  <!-- ===================== -->
+  <!-- BLOG INDEX -->
+  <!-- ===================== -->
+
+  <url>
+    <loc>https://dahdouhai.live/blog</loc>
+    <lastmod>2025-11-28</lastmod>
+    <priority>0.90</priority>
+  </url>
+
+  <!-- ===================== -->
+  <!-- 39 BLOG POSTS -->
+  <!-- ===================== -->
+
+  <url><loc>https://dahdouhai.live/blog/affordable-ai-tool-dahdouh</loc><priority>0.70</priority></url>
+  <url><loc>https://dahdouhai.live/blog/ai-for-beginners-dahdouh</loc><priority>0.75</priority></url>
+  <url><loc>https://dahdouhai.live/blog/ai-trends-2025-dahdouh</loc><priority>0.75</priority></url>
+  <url><loc>https://dahdouhai.live/blog/ai-vs-human-dahdouh-case</loc><priority>0.80</priority></url>
+  <url><loc>https://dahdouhai.live/blog/best-ai-assistants-dahdouh</loc><priority>0.80</priority></url>
+  <url><loc>https://dahdouhai.live/blog/best-ai-for-homework</loc><priority>0.75</priority></url>
+  <url><loc>https://dahdouhai.live/blog/best-ai-for-students-dahdouh</loc><priority>0.80</priority></url>
+  <url><loc>https://dahdouhai.live/blog/best-ai-tools-2025-dahdouh</loc><priority>0.80</priority></url>
+  <url><loc>https://dahdouhai.live/blog/build-ai-website-nextjs</loc><priority>0.75</priority></url>
+  <url><loc>https://dahdouhai.live/blog/create-viral-content-with-dahdouh</loc><priority>0.80</priority></url>
+  <url><loc>https://dahdouhai.live/blog/dahdouh-ai-affordable</loc><priority>0.80</priority></url>
+  <url><loc>https://dahdouhai.live/blog/dahdouh-ai-all-features</loc><priority>0.85</priority></url>
+  <url><loc>https://dahdouhai.live/blog/dahdouh-ai-content-creators</loc><priority>0.85</priority></url>
+  <url><loc>https://dahdouhai.live/blog/dahdouh-ai-for-business</loc><priority>0.85</priority></url>
+  <url><loc>https://dahdouhai.live/blog/dahdouh-ai-for-school</loc><priority>0.80</priority></url>
+  <url><loc>https://dahdouhai.live/blog/dahdouh-ai-for-students</loc><priority>0.85</priority></url>
+  <url><loc>https://dahdouhai.live/blog/dahdouh-ai-guide</loc><priority>0.90</priority></url>
+  <url><loc>https://dahdouhai.live/blog/dahdouh-ai-startup-guide</loc><priority>0.75</priority></url>
+  <url><loc>https://dahdouhai.live/blog/dahdouh-ai-study-tips</loc><priority>0.75</priority></url>
+  <url><loc>https://dahdouhai.live/blog/dahdouh-ai-vs-chatgpt</loc><priority>0.90</priority></url>
+  <url><loc>https://dahdouhai.live/blog/dahdouh-math-guide</loc><priority>0.80</priority></url>
+  <url><loc>https://dahdouhai.live/blog/dahdouh-search-engine</loc><priority>0.90</priority></url>
+  <url><loc>https://dahdouhai.live/blog/dahdouh-vision-guide</loc><priority>0.85</priority></url>
+  <url><loc>https://dahdouhai.live/blog/dahdouh-ai-daily-use</loc><priority>0.75</priority></url>
+  <url><loc>https://dahdouhai.live/blog/dahdouh-ai-for-beginners</loc><priority>0.75</priority></url>
+  <url><loc>https://dahdouhai.live/blog/dahdouh-ai-mobile</loc><priority>0.70</priority></url>
+  <url><loc>https://dahdouhai.live/blog/dahdouh-ai-search-future</loc><priority>0.85</priority></url>
+  <url><loc>https://dahdouhai.live/blog/dahdouh-ai-small-business-growth</loc><priority>0.85</priority></url>
+  <url><loc>https://dahdouhai.live/blog/dahdouh-ai-smart-study</loc><priority>0.80</priority></url>
+  <url><loc>https://dahdouhai.live/blog/dahdouh-ai-vs-all</loc><priority>0.90</priority></url>
+  <url><loc>https://dahdouhai.live/blog/fastest-ai-tool-dahdouh</loc><priority>0.75</priority></url>
+  <url><loc>https://dahdouhai.live/blog/free-ai-tools-2025</loc><priority>0.75</priority></url>
+  <url><loc>https://dahdouhai.live/blog/future-of-ai-2035-dahdouh</loc><priority>0.80</priority></url>
+  <url><loc>https://dahdouhai.live/blog/future-of-dahdouh-ai</loc><priority>0.90</priority></url>
+  <url><loc>https://dahdouhai.live/blog/how-dahdouh-search-works</loc><priority>0.90</priority></url>
+  <url><loc>https://dahdouhai.live/blog/learn-skills-with-dahdouh</loc><priority>0.70</priority></url>
+  <url><loc>https://dahdouhai.live/blog/story-of-dahdouh-ai</loc><priority>0.85</priority></url>
+  <url><loc>https://dahdouhai.live/blog/top-things-with-dahdouh</loc><priority>0.75</priority></url>
+  <url><loc>https://dahdouhai.live/blog/what-is-dahdouh-ai</loc><priority>0.95</priority></url>
 
 </urlset>
