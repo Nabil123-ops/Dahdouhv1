@@ -1,55 +1,70 @@
-import Link from "next/link";
-
 export const metadata = {
-  title: "Dahdouh AI Blog – Tips, Guides, AI News",
-  description: "Read the latest AI guides, tutorials, and technology articles from Dahdouh AI.",
+  title: "Dahdouh AI Blog",
+  description: "All Dahdouh AI articles, guides, tutorials, news, and AI tools in one place.",
 };
 
-const blogs = [
-  {
-    title: "What Is Dahdouh AI? Full Guide (2025)",
-    slug: "dahdouh-ai-guide",
-    description: "Learn everything about Dahdouh AI, features, models, pricing, and more.",
-  },
-  {
-    title: "Dahdouh AI vs ChatGPT: Which Is Better?",
-    slug: "dahdouh-ai-vs-chatgpt",
-    description: "A full comparison between Dahdouh AI and ChatGPT in 2025.",
-  },
-  {
-    title: "Best Free AI Tools in 2025",
-    slug: "free-ai-tools-2025",
-    description: "A complete list of the best free AI tools you can use today.",
-  },
-  {
-    title: "How Students Can Use Dahdouh AI for Homework",
-    slug: "dahdouh-ai-for-students",
-    description: "Guide for students to use Dahdouh AI for studying, math, essays, and more.",
-  },
-  {
-    title: "How To Build an AI Website Using Next.js",
-    slug: "build-ai-website-nextjs",
-    description: "Learn how to create a full AI website using Next.js from zero.",
-  },
-];
+export default function BlogIndex() {
+  const blogs = [
+    "affordable-ai-tool-dahdouh",
+    "ai-for-beginners-dahdouh",
+    "ai-trends-2025-dahdouh",
+    "ai-vs-human-dahdouh-case",
+    "best-ai-assistants-dahdouh",
+    "best-ai-for-homework",
+    "best-ai-for-students-dahdouh",
+    "best-ai-tools-2025-dahdouh",
+    "build-ai-website-nextjs",
+    "create-viral-content-with-dahdouh",
+    "dahdouh-ai-affordable",
+    "dahdouh-ai-all-features",
+    "dahdouh-ai-content-creators",
+    "dahdouh-ai-for-business",
+    "dahdouh-ai-for-school",
+    "dahdouh-ai-for-students",
+    "dahdouh-ai-guide",
+    "dahdouh-ai-startup-guide",
+    "dahdouh-ai-study-tips",
+    "dahdouh-ai-vs-chatgpt",
+    "dahdouh-math-guide",
+    "dahdouh-search-engine",
+    "dahdouh-vision-guide",
+    "dahdouh-ai-daily-use",
+    "dahdouh-ai-for-beginners",
+    "dahdouh-ai-mobile",
+    "dahdouh-ai-search-future",
+    "dahdouh-ai-small-business-growth",
+    "dahdouh-ai-smart-study",
+    "dahdouh-ai-vs-all",
+    "fastest-ai-tool-dahdouh",
+    "free-ai-tools-2025",
+    "future-of-ai-2035-dahdouh",
+    "future-of-dahdouh-ai",
+    "how-dahdouh-search-works",
+    "learn-skills-with-dahdouh",
+    "story-of-dahdouh-ai",
+    "top-things-with-dahdouh",
+    "what-is-dahdouh-ai"
+  ];
 
-export default function Page() {
   return (
-    <main className="max-w-4xl mx-auto p-6">
-      <h1 className="text-4xl font-bold mb-6">📘 Dahdouh AI Blog</h1>
+    <main className="max-w-3xl mx-auto py-12 px-6">
+      <h1 className="text-4xl font-bold mb-6">Dahdouh AI Blog</h1>
+      <p className="text-gray-500 mb-8">
+        Explore 40+ powerful articles about Dahdouh AI, search, tech, and productivity.
+      </p>
 
-      <div className="space-y-6">
-        {blogs.map((b) => (
-          <Link
-            key={b.slug}
-            href={`/blog/${b.slug}`}
-            className="block p-4 border rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition"
-          >
-            <h2 className="text-2xl font-semibold">{b.title}</h2>
-            <p className="text-gray-500 mt-2">{b.description}</p>
-          </Link>
+      <ul className="space-y-4">
+        {blogs.map((slug) => (
+          <li key={slug}>
+            <a
+              className="text-blue-500 underline text-lg"
+              href={`/blog/${slug}`}
+            >
+              {slug.replace(/-/g, " ").toUpperCase()}
+            </a>
+          </li>
         ))}
-      </div>
+      </ul>
     </main>
   );
 }
