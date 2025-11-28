@@ -32,9 +32,9 @@ const SideBar = ({ user, sidebarList }: { user?: User; sidebarList: any }) => {
           : " md:w-[70px] w-0 opacity-0 pointer-events-none md:pointer-events-auto md:opacity-100"
       } fixed inset-0 dark:bg-rtlDark p-3 w-[300px] flex flex-col justify-between z-10 md:relative overflow-hidden md:z-0`}
     >
-      {/* Header Section */}
-      <div className="mt-14">
-        {createPortal(
+      {/* ===== FIXED PORTAL SAFELY (Prevents 500 errors) ===== */}
+      {typeof window !== "undefined" &&
+        createPortal(
           <div className="fixed z-[1000] top-3 left-3 flex items-center gap-3">
             {/* Toggle Button */}
             <ReactTooltip place="bottom-start" tipData="Toggle Sidebar">
@@ -60,7 +60,7 @@ const SideBar = ({ user, sidebarList }: { user?: User; sidebarList: any }) => {
               />
             </div>
 
-            {/* New Chat Mobile Button */}
+            {/* New Chat Button - Mobile Only */}
             {chat && (
               <DevButton
                 size="lg"
@@ -77,14 +77,15 @@ const SideBar = ({ user, sidebarList }: { user?: User; sidebarList: any }) => {
           document.body
         )}
 
-        {/* New chat button */}
+      {/* Header Section */}
+      <div className="mt-14">
         <ReactTooltip place="bottom" tipData="New chat">
           <DevButton
             onClick={() => router.push(`/app`)}
             rounded="full"
             asIcon={open ? false : true}
             variant="v1"
-            className=" mt-5 text-sm gap-3 px-[13px] justify-between md:!flex !hidden"
+            className="mt-5 text-sm gap-3 px-[13px] justify-between md:!flex !hidden"
           >
             <IoMdAdd className="text-xl" /> {open && "New chat"}
           </DevButton>
@@ -102,17 +103,16 @@ const SideBar = ({ user, sidebarList }: { user?: User; sidebarList: any }) => {
         <SidebarChatList sidebarList={sidebarList} />
       </div>
 
-      {/* Bottom section */}
+      {/* Footer Section */}
       <div>
         <ul className="mt-5 space-y-1">
-
           {/* Help */}
           <li>
-            <ReactTooltip occupy={false} place="right" tipData="Help">
+            <ReactTooltip place="right" tipData="Help">
               <DevButton
                 variant="v3"
                 className={`text-sm *:text-xl ${
-                  open ? " aspect-auto " : " aspect-square "
+                  open ? "aspect-auto" : "aspect-square"
                 } group !w-full !justify-start gap-3`}
                 rounded="full"
               >
@@ -124,15 +124,11 @@ const SideBar = ({ user, sidebarList }: { user?: User; sidebarList: any }) => {
 
           {/* Activity */}
           <li>
-            <ReactTooltip
-              occupy={false}
-              place="right"
-              tipData="Chat Activity"
-            >
+            <ReactTooltip place="right" tipData="Chat Activity">
               <DevButton
                 variant="v3"
                 className={`text-sm *:text-xl ${
-                  open ? " aspect-auto " : " aspect-square "
+                  open ? "aspect-auto" : "aspect-square"
                 } group !w-full !justify-start gap-3`}
                 rounded="full"
               >
@@ -144,7 +140,7 @@ const SideBar = ({ user, sidebarList }: { user?: User; sidebarList: any }) => {
 
           {/* Settings */}
           <li>
-            <ReactTooltip occupy={false} place="right" tipData="Settings">
+            <ReactTooltip place="right" tipData="Settings">
               <DevPopover
                 contentClick={false}
                 place="top-end"
@@ -152,7 +148,7 @@ const SideBar = ({ user, sidebarList }: { user?: User; sidebarList: any }) => {
                   <DevButton
                     variant="v3"
                     className={`text-sm *:text-xl ${
-                      open ? " aspect-auto " : " aspect-square "
+                      open ? "aspect-auto" : "aspect-square"
                     } group !w-full !justify-start gap-3`}
                     rounded="full"
                   >
@@ -162,7 +158,6 @@ const SideBar = ({ user, sidebarList }: { user?: User; sidebarList: any }) => {
                 }
               >
                 <div className="w-52 py-2">
-                  {/* Prompt gallery */}
                   <DevButton
                     variant="v3"
                     href="/app/prompt-gallery"
@@ -173,7 +168,6 @@ const SideBar = ({ user, sidebarList }: { user?: User; sidebarList: any }) => {
                     Prompt gallery
                   </DevButton>
 
-                  {/* Dark mode */}
                   <DevButton
                     variant="v3"
                     className="w-full !justify-start gap-3 group"
@@ -194,26 +188,28 @@ const SideBar = ({ user, sidebarList }: { user?: User; sidebarList: any }) => {
           </li>
         </ul>
 
-        {/* Upgrade button — MOBILE */}
-<DevButton
-  variant="v1"
-  className="gap-2 mt-3 text-sm md:!hidden !flex"
-  onClick={() => router.push("/pricing")} // ← THIS IS THE FIX
->
-  <FaCrown className="text-lg text-yellow-400" />
-  Upgrade to Dahdouh Pro
-</DevButton>
+        {/* Upgrade Button - Mobile */}
+        <DevButton
+          variant="v1"
+          className="gap-2 mt-3 text-sm md:!hidden !flex"
+          onClick={() => router.push("/pricing")}
+        >
+          <FaCrown className="text-lg text-yellow-400" />
+          Upgrade to Dahdouh Pro
+        </DevButton>
 
-        {/* Bottom location + branding */}
-        <div className={`transform overflow-hidden ${open ? "block" : "hidden"}`}>
-          <span className="flex items-center text-xs gap-2 ml-3 mt-5">
-            <GoDotFill />
-            <p>Location: http://localhost:3000</p>
-          </span>
-          <p className="text-xs ml-3 mt-1 text-gray-400">
-            © 2025 Dahdouh AI • All Rights Reserved
-          </p>
-        </div>
+        {/* Bottom branding */}
+        {open && (
+          <div>
+            <span className="flex items-center text-xs gap-2 ml-3 mt-5">
+              <GoDotFill />
+              <p>Location: https://dahdouhai.live</p>
+            </span>
+            <p className="text-xs ml-3 mt-1 text-gray-400">
+              © 2025 Dahdouh AI • All Rights Reserved
+            </p>
+          </div>
+        )}
       </div>
     </section>
   );
