@@ -25,13 +25,14 @@ const SideBar = ({ user, sidebarList }: { user?: User; sidebarList: any }) => {
   const { chat } = useParams();
 
   return (
-    <section
-      className={`h-full md:flex-shrink-0 bg-rtlLight md:transform-none transition-[width] ${
-        open
-          ? " w-[300px] "
-          : " md:w-[70px] w-0 opacity-0 pointer-events-none md:pointer-events-auto md:opacity-100"
-      } fixed inset-0 dark:bg-rtlDark p-3 w-[300px] flex flex-col justify-between z-10 md:relative overflow-hidden md:z-0`}
-    >
+    <<section
+  className={`h-full md:flex-shrink-0 bg-rtlLight md:transform-none transition-[width]
+    ${open 
+      ? "w-[300px] opacity-100 pointer-events-auto" 
+      : "w-0 opacity-0 pointer-events-none md:pointer-events-auto md:w-[70px] md:opacity-100"
+    }
+    fixed inset-0 dark:bg-rtlDark p-3 flex flex-col justify-between z-10 md:relative md:z-0`}
+>
       {/* ===== FIXED PORTAL SAFELY (Prevents 500 errors) ===== */}
       {typeof window !== "undefined" &&
         createPortal(
