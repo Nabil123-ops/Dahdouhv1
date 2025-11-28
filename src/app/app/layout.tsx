@@ -8,19 +8,26 @@ import DevToast from "@/components/dev-components/dev-toast";
 
 const GeneralLayout = async ({ children }: { children: React.ReactNode }) => {
   const session = await auth();
-  const sidebarList = await getSidebarChat(session?.user?.id as string);
+
+  // 🔥 FIX: prevent crashing if user not logged in
+  const userId = session?.user?.id ?? null;
+  const sidebarList = userId ? await getSidebarChat(userId) : [];
 
   return (
     <main className="h-dvh w-full flex overflow-hidden">
       <SideBar user={session?.user} sidebarList={sidebarList} />
+
       <div className="flex flex-grow h-full overflow-hidden flex-col justify-between relative">
         <Header />
+
         <section className="w-full flex-grow overflow-y-auto relative mx-auto">
           {children}
         </section>
-          <InputPrompt user={session?.user} />
+
+        <InputPrompt user={session?.user} />
       </div>
-      <DevToast/>
+
+      <DevToast />
     </main>
   );
 };
