@@ -1,12 +1,7 @@
 import { auth } from "@/auth";
-import { NextResponse, type NextRequest } from "next/server"; // Import NextRequest
+import { NextResponse } from "next/server";
 
-// ⭐ Use NextRequest from next/server to ensure req.nextUrl exists
-interface AuthRequest extends NextRequest {
-  auth?: any; 
-}
-
-export default auth((req: AuthRequest) => {
+export default auth((req) => {
   const isLoggedIn = !!req.auth;
   const protectedRoutes = ["/dashboard", "/chat", "/account"];
 
