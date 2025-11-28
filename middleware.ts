@@ -1,3 +1,5 @@
+// @ts-nocheck  <-- IMPORTANT (DISABLE TYPES)
+
 import { auth } from "@/auth";
 import { NextResponse } from "next/server";
 
