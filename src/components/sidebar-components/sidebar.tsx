@@ -25,7 +25,7 @@ const SideBar = ({ user, sidebarList }: { user?: User; sidebarList: any }) => {
   const { chat } = useParams();
 
   return (
-    <<section
+    <section
   className={`h-full md:flex-shrink-0 bg-rtlLight md:transform-none transition-[width]
     ${open 
       ? "w-[300px] opacity-100 pointer-events-auto" 
