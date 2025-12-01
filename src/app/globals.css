@@ -41,7 +41,7 @@ color: white;
 /* Subtle floating motion */
 body::before {
   content: "";
-  position: absolute;
+  position: fixed;
   top: 0;      /* FIX */
   left: 0;     /* FIX */
   width: 100%; /* FIX */
