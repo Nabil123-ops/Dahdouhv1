@@ -16,7 +16,7 @@ export default function AIMiddleEastPage() {
       <p className="text-gray-500 mb-6">تاريخ النشر: 2025-01-10</p>
 
       <Image
-        src="https://dahdouhai.live/images/ai-middle-east.jpg"
+        src="https://dahdouhai.live/images/ai-middle-east.jpeg"
         width={1200}
         height={700}
         alt="الذكاء الاصطناعي في الشرق الأوسط"
