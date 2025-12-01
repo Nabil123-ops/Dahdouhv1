@@ -37,11 +37,14 @@ ROOT COLORS + BRAND VARIABLES — ULTRA PREMIUM
 GLOBAL BACKGROUND — PARALLAX + LUXURY GRADIENT
 ============================================================ */
 body {
-background: radial-gradient(circle at 20% 30%, #e7e7ff, #e7fbff 50%, #eef3ff);
-color: var(--dark);
-overflow-x: hidden;
-font-smooth: always;
--webkit-font-smoothing: antialiased;
+  background: radial-gradient(circle at 20% 30%, #e7e7ff, #e7fbff 50%, #eef3ff);
+  color: var(--dark);
+  overflow-x: hidden;
+  overflow-y: auto !important;   /* FIX scrolling */
+  position: relative;            /* FIX layer blocking */
+  -webkit-overflow-scrolling: touch; /* FIX iPhone scrolling */
+  font-smooth: always;
+  -webkit-font-smoothing: antialiased;
 }
 
 .dark body {
