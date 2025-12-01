@@ -8,6 +8,11 @@ html, body {
   overflow-y: auto; /* FIX mobile scrolling */
 }
 
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 /* ============================================================
 ROOT COLORS + BRAND VARIABLES — ULTRA PREMIUM
 ============================================================ */
