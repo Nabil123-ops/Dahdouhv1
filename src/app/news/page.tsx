@@ -57,7 +57,7 @@ export default function NewsIndexPage() {
     },
     {
       title: "أثر الذكاء الاصطناعي على الوظائف",
-      slug: "ai-jobs-impact",
+      slug: "ai-job-impact",
       description:
         "هل سيأخذ الروبوت مكان الإنسان؟ وما هي الوظائف التي ستختفي وتظهر؟",
       image: "https://dahdouhai.live/images/ai-jobs.jpg",
