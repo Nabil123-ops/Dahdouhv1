@@ -41,7 +41,7 @@ export default function NewsIndexPage() {
 
     {
       title: "مستقبل الذكاء الاصطناعي في التعليم",
-      slug: "ai-education-future",
+      slug: "ai-future-education",
       description:
         "كيف يساهم الذكاء الاصطناعي في تطوير التعليم وتخصيص المناهج للطلاب؟",
       image: "https://dahdouhai.live/images/ai-education.jpg",
