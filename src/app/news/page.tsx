@@ -36,6 +36,49 @@ export default function NewsIndexPage() {
       image: "https://dahdouhai.live/images/ai-students.jpg",
       date: "2025-01-05",
     },
+
+    // ✅ NEW ARTICLES ADDED BELOW
+
+    {
+      title: "مستقبل الذكاء الاصطناعي في التعليم",
+      slug: "ai-education-future",
+      description:
+        "كيف يساهم الذكاء الاصطناعي في تطوير التعليم وتخصيص المناهج للطلاب؟",
+      image: "https://dahdouhai.live/images/ai-education.jpg",
+      date: "2025-02-01",
+    },
+    {
+      title: "ثورة الذكاء الاصطناعي في القطاع الطبي",
+      slug: "ai-healthcare-2025",
+      description:
+        "كيف يستخدم الذكاء الاصطناعي في التشخيص، العمليات الجراحية، وإدارة المستشفيات؟",
+      image: "https://dahdouhai.live/images/ai-health.jpg",
+      date: "2025-02-02",
+    },
+    {
+      title: "أثر الذكاء الاصطناعي على الوظائف",
+      slug: "ai-jobs-impact",
+      description:
+        "هل سيأخذ الروبوت مكان الإنسان؟ وما هي الوظائف التي ستختفي وتظهر؟",
+      image: "https://dahdouhai.live/images/ai-jobs.jpg",
+      date: "2025-02-03",
+    },
+    {
+      title: "الذكاء الاصطناعي والاقتصاد العالمي",
+      slug: "ai-global-economy",
+      description:
+        "كيف يغيّر الذكاء الاصطناعي شكل الأسواق والصناعات حول العالم؟",
+      image: "https://dahdouhai.live/images/ai-economy.jpg",
+      date: "2025-02-04",
+    },
+    {
+      title: "الذكاء الاصطناعي والأمن السيبراني",
+      slug: "ai-cybersecurity-2025",
+      description:
+        "بين الحماية والتهديد… كيف يؤثر الذكاء الاصطناعي على الأمن الرقمي؟",
+      image: "https://dahdouhai.live/images/ai-cyber.jpg",
+      date: "2025-02-05",
+    },
   ];
 
   return (
