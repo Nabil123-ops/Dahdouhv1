@@ -7,51 +7,71 @@
 
   <url>
     <loc>https://dahdouhai.live/</loc>
-    <lastmod>2025-11-28</lastmod>
+    <lastmod>2025-02-06</lastmod>
     <priority>1.00</priority>
   </url>
 
   <url>
     <loc>https://dahdouhai.live/app</loc>
-    <lastmod>2025-11-28</lastmod>
+    <lastmod>2025-02-06</lastmod>
     <priority>0.95</priority>
   </url>
 
   <url>
-    <loc>https://dahdouhai.live/app/</loc>
-    <lastmod>2025-11-28</lastmod>
-    <priority>0.90</priority>
-  </url>
-
-  <url>
     <loc>https://dahdouhai.live/app/prompt-gallery</loc>
-    <lastmod>2025-11-28</lastmod>
+    <lastmod>2025-02-06</lastmod>
     <priority>0.85</priority>
   </url>
 
   <url>
     <loc>https://dahdouhai.live/signin</loc>
-    <lastmod>2025-11-28</lastmod>
+    <lastmod>2025-02-06</lastmod>
     <priority>0.80</priority>
   </url>
 
   <url>
     <loc>https://dahdouhai.live/pricing</loc>
-    <lastmod>2025-11-28</lastmod>
+    <lastmod>2025-02-06</lastmod>
     <priority>0.80</priority>
   </url>
 
   <url>
     <loc>https://dahdouhai.live/privacy</loc>
-    <lastmod>2025-11-28</lastmod>
+    <lastmod>2025-02-06</lastmod>
     <priority>0.60</priority>
   </url>
 
   <url>
     <loc>https://dahdouhai.live/terms</loc>
-    <lastmod>2025-11-28</lastmod>
+    <lastmod>2025-02-06</lastmod>
     <priority>0.60</priority>
   </url>
+
+  <url>
+    <loc>https://dahdouhai.live/news</loc>
+    <lastmod>2025-02-06</lastmod>
+    <priority>0.90</priority>
+  </url>
+
+  <url>
+    <loc>https://dahdouhai.live/rss.xml</loc>
+    <lastmod>2025-02-06</lastmod>
+    <priority>0.70</priority>
+  </url>
+
+  <!-- ===================== -->
+  <!-- NEWS ARTICLES (8) -->
+  <!-- ===================== -->
+
+  <url><loc>https://dahdouhai.live/news/best-ai-tools</loc><priority>0.80</priority></url>
+  <url><loc>https://dahdouhai.live/news/ai-middle-east</loc><priority>0.75</priority></url>
+  <url><loc>https://dahdouhai.live/news/best-ai-apps-students</loc><priority>0.75</priority></url>
+
+  <url><loc>https://dahdouhai.live/news/ai-education-future</loc><priority>0.85</priority></url>
+  <url><loc>https://dahdouhai.live/news/ai-healthcare-2025</loc><priority>0.85</priority></url>
+  <url><loc>https://dahdouhai.live/news/ai-jobs-impact</loc><priority>0.90</priority></url>
+  <url><loc>https://dahdouhai.live/news/ai-global-economy</loc><priority>0.85</priority></url>
+  <url><loc>https://dahdouhai.live/news/ai-cybersecurity-2025</loc><priority>0.90</priority></url>
 
   <!-- ===================== -->
   <!-- BLOG INDEX -->
@@ -59,12 +79,12 @@
 
   <url>
     <loc>https://dahdouhai.live/blog</loc>
-    <lastmod>2025-11-28</lastmod>
+    <lastmod>2025-02-06</lastmod>
     <priority>0.90</priority>
   </url>
 
   <!-- ===================== -->
-  <!-- 39 BLOG POSTS -->
+  <!-- BLOG POSTS (39) -->
   <!-- ===================== -->
 
   <url><loc>https://dahdouhai.live/blog/affordable-ai-tool-dahdouh</loc><priority>0.70</priority></url>
