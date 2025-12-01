@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 
-// Example articles (replace with DB or real posts)
+// Example posts (replace with your real news later)
 const posts = [
   {
-    title: "AI News Today – Dahdouh AI",
-    link: "https://dahdouhai.live/news/ai-news-today",
-    description: "Latest updates in AI and technology from Dahdouh AI.",
+    title: "Welcome to Dahdouh AI News",
+    link: "https://dahdouhai.live",
+    description: "Latest technology and AI updates from Dahdouh AI.",
     pubDate: new Date().toUTCString(),
-    guid: "ai-news-today",
+    guid: "dahdouhai-news-1",
   },
 ];
 
@@ -26,12 +26,12 @@ function generateRSS(posts: any[]) {
     )
     .join("");
 
-  return `<?xml version="1.0" encoding="UTF-8" ?>
+  return `<?xml version="1.0" encoding="UTF-8"?>
   <rss version="2.0">
     <channel>
-      <title>Dahdouh AI News</title>
+      <title><![CDATA[Dahdouh AI News]]></title>
       <link>https://dahdouhai.live</link>
-      <description>Latest technology & AI news from Dahdouh AI</description>
+      <description><![CDATA[Latest technology & AI news from Dahdouh AI]]></description>
       ${items}
     </channel>
   </rss>`;
