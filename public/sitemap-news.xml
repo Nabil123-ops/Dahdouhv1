@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<news:sitemapindex xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
+
+  <news:url>
+    <loc>https://dahdouhai.live/news/ai-education-future</loc>
+    <news:news>
+      <news:publication>
+        <news:name>Dahdouh AI</news:name>
+        <news:language>ar</news:language>
+      </news:publication>
+      <news:publication_date>2025-02-01</news:publication_date>
+      <news:title>مستقبل الذكاء الاصطناعي في التعليم</news:title>
+    </news:news>
+  </news:url>
+
+  <news:url>
+    <loc>https://dahdouhai.live/news/ai-healthcare-2025</loc>
+    <news:news>
+      <news:publication>
+        <news:name>Dahdouh AI</news:name>
+        <news:language>ar</news:language>
+      </news:publication>
+      <news:publication_date>2025-02-02</news:publication_date>
+      <news:title>ثورة الذكاء الاصطناعي في القطاع الطبي</news:title>
+    </news:news>
+  </news:url>
+
+  <news:url>
+    <loc>https://dahdouhai.live/news/ai-jobs-impact</loc>
+    <news:news>
+      <news:publication>
+        <news:name>Dahdouh AI</news:name>
+        <news:language>ar</news:language>
+      </news:publication>
+      <news:publication_date>2025-02-03</news:publication_date>
+      <news:title>أثر الذكاء الاصطناعي على الوظائف</news:title>
+    </news:news>
+  </news:url>
+
+  <news:url>
+    <loc>https://dahdouhai.live/news/ai-global-economy</loc>
+    <news:news>
+      <news:publication>
+        <news:name>Dahdouh AI</news:name>
+        <news:language>ar</news:language>
+      </news:publication>
+      <news:publication_date>2025-02-04</news:publication_date>
+      <news:title>الذكاء الاصطناعي والاقتصاد العالمي</news:title>
+    </news:news>
+  </news:url>
+
+  <news:url>
+    <loc>https://dahdouhai.live/news/ai-cybersecurity-2025</loc>
+    <news:news>
+      <news:publication>
+        <news:name>Dahdouh AI</news:name>
+        <news:language>ar</news:language>
+      </news:publication>
+      <news:publication_date>2025-02-05</news:publication_date>
+      <news:title>الذكاء الاصطناعي والأمن السيبراني</news:title>
+    </news:news>
+  </news:url>
+
+</news:sitemapindex>
